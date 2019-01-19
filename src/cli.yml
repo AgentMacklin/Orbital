@@ -1,0 +1,33 @@
+name:
+version: "1.0"
+author: Austen LeBeau <austenlebeau@gmail.com>
+about:
+
+args:
+    - run:
+        short: a
+        long:  all
+        help:
+        value_name: FILE
+
+    - gross:
+        short: g
+        long:  gross
+        help:
+        value_name: FILE
+
+    - fuel:
+        short: f
+        long:  fuel
+        help:
+        value_name: FILE
+
+
+subcommands:
+    - init:
+        about: Create a new project
+        args:
+            - file:
+                value_name: NAME
+                required: true
+                help: Name of study file

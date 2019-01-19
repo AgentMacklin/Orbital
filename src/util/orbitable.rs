@@ -18,7 +18,7 @@ pub struct Orbit {
  * A body with an optional orbit argument, which describes the body's orbital
  * parameters if need be. For example, if you were going to calculate the gravity
  * at the surface of the Body, you don't need the Body's orbital parameters for
- * that, so you can pass in None for orbit and skip that all together
+ * that, so you can pass in None for orbit and skip that altogether
  */
 #[derive(Debug)]
 pub struct Body {

@@ -1,7 +1,12 @@
-mod util;
-use self::util::orbitable::{Body, Orbit};
+#[macro_use]
+extern crate clap;
+#[macro_use]
+extern crate serde_yaml;
+#[macro_use]
+extern crate serde_derive;
 
 fn main() {
-    let Earth = Body::new(5.974e24, 6378e3, None);
-    println!("{:.12} m/s{}", Earth.surface_gravity(), 0x00B2 as char);
+    let yaml = load_yaml!("cli.yml");
+    let matches = App::from_yaml(yaml).get_matches();
+    println!("Hello, World!");
 }
