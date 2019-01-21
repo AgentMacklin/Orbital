@@ -54,6 +54,16 @@ impl Body {
 
     // Return surface gravity of Body
     pub fn surface_gravity(&self) -> f64 {
-        (GRAV_CONST * self.mass) / (self.radius.powi(2))
+        (GRAV_CONST * self.mass) / (self.radius * self.radius)
+    }
+
+    pub fn surf_grav_rotation(&self, day: f64) -> f64 {
+        let rot_veloc = self.rotational_veloc(day);
+    }
+
+    fn rotational_veloc(&self, day: f64) -> f64 {
+        // 1 day of body in seconds
+        let rot_time = day * 24.0 * 3600.0;
+        self.radius / rot_time
     }
 }
