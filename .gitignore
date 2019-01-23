@@ -1,5 +1,5 @@
 /.vscode/
 /target
 /.DS_Store
-/*.lock
+# /*.lock
 **/*.rs.bk
