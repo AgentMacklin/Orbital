@@ -1,0 +1,9 @@
+[package]
+name = "orbital"
+version = "0.1.0"
+authors = ["Austen LeBeau <austenlebeau@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+# Print data in an easy to read table
+prettytable-rs = "0.8.0"

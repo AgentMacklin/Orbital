@@ -1,0 +1,5 @@
+/.vscode/
+/target
+/.DS_Store
+/*.lock
+**/*.rs.bk
