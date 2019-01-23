@@ -1,11 +1,4 @@
-<<<<<<< HEAD
-/.vscode/
-/target
-/.DS_Store
-# /*.lock
-**/*.rs.bk
-=======
 /target
 **/*.rs.bk
 **/.DS_Store
->>>>>>> d4e0cb4d39eed4456062776765052dbc0a668330
+**/.vscode/
