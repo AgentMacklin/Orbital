@@ -5,6 +5,17 @@
 use std::f64::consts::PI;
 // const GRAV_CONST: f64 = 6.67384e-11;
 
+<<<<<<< HEAD
+=======
+// Defines orbital parameters for a body
+#[derive(Debug)]
+pub struct Orbit {
+    pub inclination: f64,
+    pub eccentricity: f64,
+    pub semi_major: f64,
+}
+
+>>>>>>> d4e0cb4d39eed4456062776765052dbc0a668330
 /**
  * A body with an optional orbit argument, which describes the body's orbital
  * parameters if need be. For example, if you were going to calculate the gravity
@@ -13,11 +24,15 @@ use std::f64::consts::PI;
  */
 #[derive(Debug)]
 pub struct Body {
+<<<<<<< HEAD
     pub name: String,
+=======
+>>>>>>> d4e0cb4d39eed4456062776765052dbc0a668330
     pub gm: f64,
     pub radius: f64,
     pub day_len: Option<f64>,
     pub orbit: Option<Orbit>,
+<<<<<<< HEAD
     pub position: Option<Vec3>,
 }
 
@@ -35,17 +50,35 @@ pub struct Vec3 {
     x: f64,
     y: f64,
     z: f64,
+=======
+}
+
+impl Orbit {
+    pub fn new(incl: f64, eccen: f64, semi_major: f64) -> Orbit {
+        Orbit {
+            inclination: incl,
+            eccentricity: eccen,
+            semi_major: semi_major,
+        }
+    }
+>>>>>>> d4e0cb4d39eed4456062776765052dbc0a668330
 }
 
 impl Body {
     // Create a new Body with optional orbit parameters
+<<<<<<< HEAD
     pub fn default(name: &str, gm: f64, radius: f64) -> Body {
         Body {
             name: String::from(name),
+=======
+    pub fn new(gm: f64, radius: f64) -> Body {
+        Body {
+>>>>>>> d4e0cb4d39eed4456062776765052dbc0a668330
             gm: gm,
             radius: radius,
             day_len: None,
             orbit: None,
+<<<<<<< HEAD
             position: None,
         }
     }
@@ -53,11 +86,21 @@ impl Body {
     pub fn with_day(name: &str, gm: f64, radius: f64, day_len: f64) -> Body {
         Body {
             name: String::from(name),
+=======
+        }
+    }
+    // Create a body with the length of its day
+    pub fn with_day(gm: f64, radius: f64, day_len: f64) -> Body {
+        Body {
+>>>>>>> d4e0cb4d39eed4456062776765052dbc0a668330
             gm: gm,
             radius: radius,
             day_len: Some(day_len),
             orbit: None,
+<<<<<<< HEAD
             position: None,
+=======
+>>>>>>> d4e0cb4d39eed4456062776765052dbc0a668330
         }
     }
 
@@ -69,18 +112,27 @@ impl Body {
 
     // surface gravity with rotation
     pub fn sg_with_rotation(&self) -> f64 {
+<<<<<<< HEAD
         let rot_veloc = self.rotational_velocity();
+=======
+        let rot_veloc = self.rotational_veloc();
+>>>>>>> d4e0cb4d39eed4456062776765052dbc0a668330
         let grav_accel = self.surface_gravity();
         grav_accel - (1000.0 * (rot_veloc * rot_veloc) / self.radius)
     }
 
     // Return the tangential velocity at the equator of a body
+<<<<<<< HEAD
     fn rotational_velocity(&self) -> f64 {
+=======
+    fn rotational_veloc(&self) -> f64 {
+>>>>>>> d4e0cb4d39eed4456062776765052dbc0a668330
         // 1 day of body in seconds
         (2.0 * PI * self.radius) / day_to_seconds(self.day_len)
     }
 }
 
+<<<<<<< HEAD
 impl Orbit {
     pub fn new(incl: f64, eccen: f64, semi_major: f64) -> Orbit {
         Orbit {
@@ -113,6 +165,8 @@ impl Vec3 {
     }
 }
 
+=======
+>>>>>>> d4e0cb4d39eed4456062776765052dbc0a668330
 fn day_to_seconds(day_len: Option<f64>) -> f64 {
     match day_len {
         Some(num) => num.abs() * 24.0 * 3600.0,
