@@ -7,4 +7,3 @@ edition = "2018"
 [dependencies]
 # Print data in an easy to read table
 prettytable-rs = "0.8.0"
-nalgebra = "0.16.13"
