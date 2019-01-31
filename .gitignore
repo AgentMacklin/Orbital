@@ -1,8 +1,5 @@
 /target
 **/*.rs.bk
 **/.DS_Store
-<<<<<<< HEAD
-/.vscode/
-=======
 **/.vscode/
->>>>>>> 852cdabd16582e1fbea950ba881c15f27fc6582d
+*.lock
