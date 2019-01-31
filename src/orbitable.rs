@@ -6,58 +6,27 @@ use std::f64::consts::PI;
 // const GRAV_CONST: f64 = 6.67384e-11;
 
 /**
- * A body with an optional orbit argument, which describes the body's orbital
- * parameters if need be. For example, if you were going to calculate the gravity
- * at the surface of the Body, you don't need the Body's orbital parameters for
- * that, so you can pass in None for orbit and skip that altogether
+ * A body describes an orbitable body with a name (for printing), GM, and radius.
+ * It also has other optional parameters that can be specified according to the
+ * body's use case (like calculating the centripetal acceleration using the body's
+ * length of day, which is not needed for other calculations).
  */
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Body {
-    pub name: String,
     pub gm: f64,
     pub radius: f64,
+    pub name: Option<String>,
     pub day_len: Option<f64>,
-    pub orbit: Option<Orbit>,
-    pub position: Option<Vec3>,
-}
-
-// Defines orbital parameters for a body
-#[derive(Debug)]
-pub struct Orbit {
-    pub inclination: f64,
-    pub eccentricity: f64,
-    pub semi_major: f64,
-}
-
-// A 3-dimensional vector
-#[derive(Debug)]
-pub struct Vec3 {
-    x: f64,
-    y: f64,
-    z: f64,
 }
 
 impl Body {
-    // Create a new Body with optional orbit parameters
-    pub fn default(name: &str, gm: f64, radius: f64) -> Body {
-        Body {
-            name: String::from(name),
-            gm: gm,
-            radius: radius,
-            day_len: None,
-            orbit: None,
-            position: None,
-        }
-    }
     // Create a body with the length of its day
-    pub fn with_day(name: &str, gm: f64, radius: f64, day_len: f64) -> Body {
+    pub fn new(name: &str, gm: f64, radius: f64, day_len: f64) -> Body {
         Body {
-            name: String::from(name),
             gm: gm,
             radius: radius,
+            name: Some(String::from(name)),
             day_len: Some(day_len),
-            orbit: None,
-            position: None,
         }
     }
 
@@ -65,6 +34,13 @@ impl Body {
     pub fn surface_gravity(&self) -> f64 {
         // 1000.0 converts km to m
         1000.0 * self.gm / (self.radius * self.radius)
+    }
+
+    pub fn name(&self) -> String {
+        match self.name.as_ref() {
+            Some(name) => name.clone(),
+            None => panic!("Body doesn't have a name."),
+        }
     }
 
     // surface gravity with rotation
@@ -78,38 +54,6 @@ impl Body {
     fn rotational_velocity(&self) -> f64 {
         // 1 day of body in seconds
         (2.0 * PI * self.radius) / day_to_seconds(self.day_len)
-    }
-}
-
-impl Orbit {
-    pub fn new(incl: f64, eccen: f64, semi_major: f64) -> Orbit {
-        Orbit {
-            inclination: incl,
-            eccentricity: eccen,
-            semi_major: semi_major,
-        }
-    }
-}
-
-impl Vec3 {
-    // New Vec3
-    pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
-        Vec3 { x, y, z }
-    }
-
-    // Magnitude of vector
-    pub fn magnitude(&self) -> f64 {
-        (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
-    }
-
-    // return a Vec3 which is a normalized version of previous Vec3
-    pub fn normalized(&self) -> Vec3 {
-        let mag = self.magnitude();
-        Vec3 {
-            x: self.x / mag,
-            y: self.y / mag,
-            z: self.z / mag,
-        }
     }
 }
 
