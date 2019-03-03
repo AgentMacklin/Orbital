@@ -51,10 +51,10 @@ fn main() {
     printer!("Mars' Semimajor Axis", s => mars.semi_major_axis() * METERTOAU);
     printer!("Mars' Orbital Parameter", s => mars.orbital_parameter() * METERTOAU);
     printer!("Mars' True Anomaly", s => mars.true_anomaly());
-    printer!("Position at 0 Degrees", v => f_frame * mars.position_at_angle(0.0) * METERTOAU);
-    printer!("Velocity at 0 Degrees", v => f_frame * mars.position_at_angle(0.0));
-    printer!("Position at 90 Degrees", v => f_frame * mars.position_at_angle(90.0));
-    printer!("Velocity at 90 Degrees", v => f_frame * mars.position_at_angle(90.0));
-    printer!("Position at 180 Degrees", v => f_frame * mars.position_at_angle(180.0));
-    printer!("Velocity at 180 Degrees", v => f_frame * mars.position_at_angle(180.0));
+    printer!("Position at 0 Degrees", v => mars.position_at_angle(0.0) * METERTOAU);
+    printer!("Velocity at 0 Degrees", v => mars.position_at_angle(0.0) * TODAYSEC);
+    printer!("Position at 90 Degrees", v => mars.position_at_angle(90.0) * METERTOAU);
+    printer!("Velocity at 90 Degrees", v => mars.position_at_angle(90.0) * TODAYSEC);
+    printer!("Position at 180 Degrees", v => mars.position_at_angle(180.0) * METERTOAU);
+    printer!("Velocity at 180 Degrees", v => mars.position_at_angle(180.0) * TODAYSEC);
 }

@@ -52,17 +52,19 @@ impl Body {
         self.omega().norm()
     }
 
-    pub fn position_at_angle(&self, angle: f64) -> f64 {
+    pub fn position_at_angle(&self, angle: f64) -> Vector3<f64> {
         let e = self.eccentricity_vec().norm();
         let numer = self.angular_momentum().norm_squared() / SOLARGM;
         let denom = 1_f64 + (e * (angle.to_radians()).cos());
-        numer / denom
+        let radius = numer / denom;
+        Vector3::new(radius * angle.cos(), radius * angle.sin(), 0.0)
     }
 
-    pub fn velocity_at_angle(&self, angle: f64) -> f64 {
-        let position = self.position_at_angle(angle);
+    pub fn velocity_at_angle(&self, angle: f64) -> Vector3<f64> {
+        let position = self.position_at_angle(angle).norm();
         let semi_major = self.semi_major_axis();
-        (SOLARGM * (2.0 / position - 1.0 / semi_major)).sqrt()
+        let velocity = (SOLARGM * (2.0 / position - 1.0 / semi_major)).sqrt();
+        Vector3::new(velocity * angle.sin(), velocity * angle.cos(), 0.0)
     }
 
     // Angle to other body, keep getting the wrong thing anyway, tried everything
