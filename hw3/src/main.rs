@@ -16,6 +16,8 @@ mod util;
 use self::util::*;
 
 const METERTOAU: f64 = 1.0 / 1.49597870700e11;
+const SECTODAY: f64 = 1.0 / (24.0 * 3600.0);
+const TODAYSEC: f64 = METERTOAU / SECTODAY;
 const KMTOM: f64 = 1000_f64;
 
 fn main() {
@@ -34,8 +36,7 @@ fn main() {
 
     /* Constructing F frame from mars' orbital parameters */
     let f_frame = mars.make_frame();
-
-    let Z = mars.eccentricity_vec().dot(&mars.angular_momentum()) / mars.angular_momentum().norm();
+    let z = mars.eccentricity_vec().dot(&mars.angular_momentum()) / mars.angular_momentum().norm();
 
     printer!("Mars Position", v => mars.position);
     printer!("Mars Velocity", v => mars.velocity);
@@ -45,5 +46,15 @@ fn main() {
     printer!("Mars Angular Momentum", v => mars.angular_momentum());
     printer!("Mars Orbital Energy", s => mars.total_energy());
     printer!("Mars Eccentricty Vector", v => mars.eccentricity_vec());
-    printer!("Z", s => Z);
+    printer!("Z", s => z);
+    printer!("AA", s => mars.eccentricity_vec().dot(&mars.angular_momentum()));
+    printer!("Mars' Semimajor Axis", s => mars.semi_major_axis() * METERTOAU);
+    printer!("Mars' Orbital Parameter", s => mars.orbital_parameter() * METERTOAU);
+    printer!("Mars' True Anomaly", s => mars.true_anomaly());
+    printer!("Position at 0 Degrees", v => f_frame * mars.position_at_angle(0.0) * METERTOAU);
+    printer!("Velocity at 0 Degrees", v => f_frame * mars.position_at_angle(0.0));
+    printer!("Position at 90 Degrees", v => f_frame * mars.position_at_angle(90.0));
+    printer!("Velocity at 90 Degrees", v => f_frame * mars.position_at_angle(90.0));
+    printer!("Position at 180 Degrees", v => f_frame * mars.position_at_angle(180.0));
+    printer!("Velocity at 180 Degrees", v => f_frame * mars.position_at_angle(180.0));
 }

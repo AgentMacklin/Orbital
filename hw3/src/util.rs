@@ -59,6 +59,12 @@ impl Body {
         numer / denom
     }
 
+    pub fn velocity_at_angle(&self, angle: f64) -> f64 {
+        let position = self.position_at_angle(angle);
+        let semi_major = self.semi_major_axis();
+        (SOLARGM * (2.0 / position - 1.0 / semi_major)).sqrt()
+    }
+
     // Angle to other body, keep getting the wrong thing anyway, tried everything
     pub fn angle_to(&self, other: &Body) -> f64 {
         (self.position.dot(&other.position) / (self.position.norm() * other.position.norm()))
@@ -72,6 +78,17 @@ impl Body {
         let e_h = self.angular_momentum().normalize();
         let e_tht = e_h.cross(&e_r);
         Matrix3::from_rows(&[e_r.transpose(), e_tht.transpose(), e_h.transpose()])
+    }
+
+    pub fn semi_major_axis(&self) -> f64 {
+        let ang_moment = self.angular_momentum().norm();
+        let e = self.eccentricity_vec().norm();
+        ang_moment.powi(2) / (SOLARGM * (1_f64 - e.powi(2)))
+    }
+
+    pub fn orbital_parameter(&self) -> f64 {
+        let e = self.eccentricity_vec().norm();
+        self.semi_major_axis() * (1.0 - e.powi(2))
     }
 }
 
