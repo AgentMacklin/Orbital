@@ -74,13 +74,14 @@ Matrix *row_vector(size_t ncols, ...);
 Matrix *col_vector(size_t nrows, ...);
 
 Matrix *cross(Matrix *vec1, Matrix *vec2);
-Matrix *normalize(Matrix *vec); // Assuming this is a vector
+Matrix *normalize(Matrix *vec);  // Assuming this is a vector
 Matrix *transpose(Matrix *mat);
 Matrix *scale_mat(Matrix *mat, double scalar);
 Matrix *multiply(Matrix *mat1, Matrix *mat2);
 Matrix *divide(Matrix *mat1, double divisor);
 Matrix *matrix_add(Matrix *mat1, Matrix *mat2);
 Matrix *matrix_sub(Matrix *mat1, Matrix *mat2);
+Matrix *copy_matrix(Matrix *mat);
 
 double magnitude(Matrix *vec);
 double dot(Matrix *vec1, Matrix *vec2);
@@ -96,4 +97,4 @@ int vector_type(Matrix *mat);
 
 void print_mat(Matrix *mat);
 
-#endif // MATRIX_H
+#endif  // MATRIX_H

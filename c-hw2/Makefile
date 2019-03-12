@@ -1,17 +1,14 @@
 CC		:= gcc
 C_FLAGS := -Wall -Wextra
 
+INCL	:= include
 BIN		:= bin
 SRC		:= src
 
 LIBRARIES	:=
-LINKS		:= m
+LINKS		:= -lm
 
-ifeq ($(OS),Windows_NT)
-EXECUTABLE	:= main.exe
-else
 EXECUTABLE	:= main
-endif
 
 all: $(BIN)/$(EXECUTABLE)
 
@@ -22,4 +19,4 @@ run: all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(SRC)/*
-	$(CC) $(C_FLAGS) $^ -o $@ $(LIBRARIES) -l$(LINKS)
+	$(CC) $(C_FLAGS) -I$(INCL)  $^ -o $@ $(LIBRARIES) $(LINKS)

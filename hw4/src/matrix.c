@@ -1,8 +1,8 @@
 #include "matrix.h"
-#include "util.h"
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
+#include "util.h"
 
 /**
  * Basic matrix constructor, which takes in the size you
@@ -311,5 +311,41 @@ Matrix *transpose(Matrix *mat) {
     } else {
         perror("Null Matrix pointer was passed to transpose");
         return NULL;
+    }
+}
+
+Matrix *copy_matrix(Matrix *mat) {
+    Matrix *new_mat = matrix(mat->nrows, mat->ncols);
+    for (size_t i = 0; i < mat->nrows; ++i) {
+        for (size_t j = 0; j < mat->ncols; ++j) {
+            new_mat->elems[i][j] = mat->elems[i][j];
+        }
+    }
+    return new_mat;
+}
+
+Matrix *cross(Matrix *mat1, Matrix *mat2) {
+    Matrix *vec1, *vec2;
+    if (!is_vector(mat1) || !is_vector(mat2)) {
+        printf("One of the matrices is not a vector.\n");
+        return NULL;
+    } else if ((vector_length(mat1) != 3) || (vector_length(mat2) != 3)) {
+        printf("One of the matrices is not the proper length.\n");
+        return NULL;
+    } else {
+        vec1 = vector_type(mat1) == ROW ? copy_matrix(mat1)
+                                        : copy_matrix(transpose(mat1));
+        vec2 = vector_type(mat2) == ROW ? copy_matrix(mat2)
+                                        : copy_matrix(transpose(mat2));
+        Matrix *crossed_vec = matrix(1, 3);
+        crossed_vec->elems[0][0] = vec1->elems[0][1] * vec2->elems[0][2] -
+                                   vec1->elems[0][2] * vec2->elems[0][1];
+        crossed_vec->elems[0][1] = vec1->elems[0][2] * vec2->elems[0][0] -
+                                   vec1->elems[0][0] * vec2->elems[0][2];
+        crossed_vec->elems[0][2] = vec1->elems[0][0] * vec2->elems[0][1] -
+                                   vec1->elems[0][1] * vec2->elems[0][0];
+        free(vec1);
+        free(vec2);
+        return crossed_vec;
     }
 }

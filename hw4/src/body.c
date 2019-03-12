@@ -1,10 +1,30 @@
 #include "body.h"
+#include <stdio.h>
 #include "math.h"
-#include "matrix.h"
 
 #define sqr(x) x *x
 #define SOLARGM 1.328905188132376e20
 #define RAD2DEG (180.0 / acos(-1.0))
+
+/**
+ * This function constructs a body pointer since doing it
+ * the old fashioned way with an initializer list is doesn't
+ * seem to want to work
+ */
+Body *body(Matrix *position, Matrix *velocity) {
+    if (position == NULL) {
+        perror("Body constructer was passed a null position vector");
+        return NULL;
+    } else if (velocity == NULL) {
+        perror("Body constructer was passed a null velocity vector");
+        return NULL;
+    } else {
+        Body *new_body = malloc(sizeof(Body));
+        new_body->position = position;
+        new_body->velocity = velocity;
+        return new_body;
+    }
+}
 
 Matrix *radial_velocity(Body *body) {
     double norm = magnitude(body->position);
@@ -32,7 +52,7 @@ double true_anomaly(Body *body) {
 
 Matrix *eccentricity_vec(Body *body) {
     Matrix *temp_vec = cross(body->velocity, angular_momentum(body));
-    Matrix *lhs_mat = divideA(temp_vec, SOLARGM);
+    Matrix *lhs_mat = divide(temp_vec, SOLARGM);
     Matrix *norm_position = normalize(body->position);
     Matrix *result = matrix_sub(lhs_mat, norm_position);
     free(temp_vec);

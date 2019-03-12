@@ -57,14 +57,30 @@ impl Body {
         let numer = self.angular_momentum().norm_squared() / SOLARGM;
         let denom = 1_f64 + (e * (angle.to_radians()).cos());
         let radius = numer / denom;
-        Vector3::new(radius * angle.cos(), radius * angle.sin(), 0.0)
+        Vector3::new(radius, 0.0, 0.0)
     }
 
     pub fn velocity_at_angle(&self, angle: f64) -> Vector3<f64> {
-        let position = self.position_at_angle(angle).norm();
-        let semi_major = self.semi_major_axis();
-        let velocity = (SOLARGM * (2.0 / position - 1.0 / semi_major)).sqrt();
-        Vector3::new(velocity * angle.sin(), velocity * angle.cos(), 0.0)
+        let p = self.orbital_parameter();
+        let e = self.eccentricity_vec().norm();
+        let h = self.angular_momentum().norm_squared();
+        Vector3::new(
+            (h / p) * e * angle.to_radians().sin(),
+            (h / p) * (1_f64 + e * angle.to_radians().cos()),
+            0.0,
+        )
+    }
+
+    pub fn position_and_velocity(&self, angle: f64) -> (Vector3<f64>, Vector3<f64>) {
+        let r = self.position_at_angle(angle);
+        let v = self.velocity_at_angle(angle);
+        let tht = (angle - self.true_anomaly()).to_radians();
+        let trans = Matrix3::from_rows(&[
+            Vector3::new(tht.cos(), -tht.sin(), 0.0).transpose(),
+            Vector3::new(tht.sin(), tht.cos(), 0.0).transpose(),
+            Vector3::new(0.0, 0.0, 1.0).transpose(),
+        ]);
+        (trans * r, trans * v)
     }
 
     // Angle to other body, keep getting the wrong thing anyway, tried everything
