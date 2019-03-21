@@ -123,7 +123,7 @@ impl Body {
         let theta = self.true_anomaly();
         2.0 * ((theta.to_radians() / 2.0).tan() / ((1.0 + e) / (1.0 - e)).sqrt())
             .atan()
-            .to_degrees()
+            .to_degrees() + 360.0
     }
 
     pub fn time_since_periapsis(&self) -> f64 {
@@ -132,17 +132,19 @@ impl Body {
         let e = self.eccentricity_vec().norm();
         (a.powi(3) / SOLARGM).sqrt() * (E - e * E.sin())
     }
-}
 
-pub fn newton_raphson(init: f64, func: &Fn(f64) -> f64, func_prime: &Fn(f64) -> f64) -> f64 {
-    let tolerance = 1.0e-10;
-    let mut x_1 = func(init);
-    let mut x_2 = 0_f64;
-    while (x_1 - x_2).abs() > tolerance {
-        x_2 = x_1 - (func(x_1) / func_prime(x_1));
-        x_1 = x_2;
+    /// Return the mean anomaly at a certain time from current position
+    pub fn mean_anomaly(&self, time: f64) -> f64 {
+        let n = (2.0 * PI) / self.orbital_period();
+        n * (time + self.time_since_periapsis())
     }
-    return x_2;
+
+    /// The eccentric anomaly at a certain time
+    pub fn eccen_anom_at_time(&self, time: f64) -> f64 {
+        let mean_anomaly = self.mean_anomaly(time).to_radians();
+        let eccen = self.eccentricity_vec().norm();
+        kepler_iterate(0.0, mean_anomaly, eccen).to_degrees()
+    }
 }
 
 /* Macro that makes it more convenient to print out results */
@@ -170,4 +172,51 @@ macro_rules! printer {
         }
         println!();
     };
+}
+
+
+pub fn delta_e(e: f64, nt: f64, eccen: f64) -> f64 {
+    (e - eccen * e.sin() - nt) / (1.0 - eccen * e.cos())
+}
+
+pub fn kepler(init: f64, nt: f64, eccen: f64) -> f64 {
+    init - delta_e(init, nt, eccen)
+}
+
+pub fn kepler_iterate(init: f64, nt: f64, eccen: f64) -> f64 {
+    let mut e_0 = init;
+    let mut e = kepler(e_0, nt, eccen);
+
+    while (e - e_0).abs() > 1e-12 {
+        e_0 = e;
+        e = kepler(e_0, nt, eccen);
+    }
+
+    return e;
+}
+
+pub fn hyper_delta_e(e: f64, nt: f64, eccen: f64) -> f64 {
+    let numer = eccen * e.sinh() - nt - e;
+    let denom = eccen * e.cosh()  - 1.0;
+    let val = numer / denom;
+    return val;
+}
+
+pub fn hyper_kepler(init: f64, nt: f64, eccen: f64) -> f64 {
+    let val = init - hyper_delta_e(init, nt, eccen);
+    return val;
+}
+
+pub fn hyper_kepler_iterate(init: f64, nt: f64, eccen: f64) -> f64 {
+    let mut e_0 = init;
+    let mut e = hyper_kepler(e_0, nt, eccen);
+
+    while (e - e_0).abs() > 1e-12 {
+        e_0 = e;
+        e = hyper_kepler(e_0, nt, eccen);
+        if e == e_0 {
+            return e;
+        }
+    }
+    return e;
 }
