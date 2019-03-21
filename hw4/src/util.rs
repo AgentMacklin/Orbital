@@ -28,9 +28,9 @@ impl Body {
         let posit = self.position.normalize();
         let val = e_vec.dot(&posit) / (e_vec.norm() * posit.norm());
         if posit.dot(&self.velocity.normalize()) < 0.0 {
-            return (2.0 * PI - val.acos()).to_degrees()
+            return (2.0 * PI - val.acos()).to_degrees();
         } else {
-            return val.acos().to_degrees()
+            return val.acos().to_degrees();
         }
     }
 
@@ -63,10 +63,6 @@ impl Body {
         let denom = 1_f64 + (e * (angle.to_radians()).cos());
         let radius = numer / denom;
         Vector3::new(radius, 0.0, 0.0)
-    }
-
-    pub fn test(&self) {
-        let ang_moment = self.angular_momentum();
     }
 
     pub fn velocity_at_angle(&self, angle: f64) -> Vector3<f64> {
@@ -123,12 +119,12 @@ impl Body {
     }
 
     pub fn eccentric_anomaly(&self) -> f64 {
-        let r = self.position.norm();
-        let a = self.semi_major_axis();
         let e = self.eccentricity_vec().norm();
-       ((1.0 - (r / a)) / e).acos().to_degrees()
+        let theta = self.true_anomaly();
+        2.0 * ((theta.to_radians() / 2.0).tan() / ((1.0 + e) / (1.0 - e)).sqrt())
+            .atan()
+            .to_degrees()
     }
-
 
     pub fn time_since_periapsis(&self) -> f64 {
         let E = self.eccentric_anomaly().to_radians();
