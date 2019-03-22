@@ -5,7 +5,7 @@ extern crate nalgebra;
 use nalgebra::{Matrix3, Vector3};
 use std::f64::consts::PI;
 
-const SOLARGM: f64 = 1.328905188132376e11;
+const SOLARGM: f64 = 1.328905188132376e20;
 
 /* Orbital bodies, in this case New Horizons and Ultima Thule */
 pub struct Body {
