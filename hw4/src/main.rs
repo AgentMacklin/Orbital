@@ -76,8 +76,21 @@ fn main() {
     printer!("P", s => hyper_kepler_iterate(0.0, nt, eccen));
 
     nt = 194.0 * PI;
-    let q = hyper_kepler_iterate(0.0, nt, eccen);
+    let q = hyper_kepler_iterate(5.0, nt, eccen);
     printer!("Q", s => q);
+
+    let eccen_anom = ryugu.eccen_anom_at_time(143.0 * DAYTOSEC).to_radians();
+
+    let sma = ryugu.semi_major_axis().to_radians();
+    let e_vec = ryugu.eccentricity_vec().normalize();
+
+    let x = (sma * eccen_anom.cos()) - (sma * e_vec.norm());
+    let y = sma * (1.0 - e_vec.norm().powi(2)).sqrt() * eccen_anom.sin();
+
+    let e_h = ryugu.angular_momentum().normalize();
+    let e_t = e_h.cross(&e_vec);
+
+    let radius = x * e_vec + y * e_t;
 
     /**
      * The rest of the homework
@@ -88,7 +101,6 @@ fn main() {
     printer!("Ryugu's Orbital Period", s => ryugu.orbital_period() * SECTODAY);
     printer!("Ryugu's Eccentric Anomaly", s => ryugu.eccentric_anomaly());
     printer!("Time Since Periapsis", s => ryugu.time_since_periapsis() * SECTODAY);
-    printer!("Eccentric Anomaly (143 days)", s => ryugu.eccen_anom_at_time(143.0 * DAYTOSEC));
+    printer!("Eccentric Anomaly (143 days)", s => eccen_anom);
+    printer!("Last Problem", v => radius);
 }
-
-
