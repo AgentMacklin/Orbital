@@ -99,14 +99,16 @@ impl Body {
     pub fn make_frame(&self) -> Matrix3<f64> {
         let e_r = self.position.normalize();
         let e_h = self.angular_momentum().normalize();
-        let e_tht = e_h.cross(&e_r);
-        Matrix3::from_rows(&[e_r.transpose(), e_tht.transpose(), e_h.transpose()])
+        let e_tht = e_r.cross(&e_h);
+        Matrix3::new(
+            e_r[0], e_r[1], e_r[2], e_tht[0], e_tht[1], e_tht[2], e_h[0], e_h[1], e_h[2],
+        )
     }
 
     pub fn semi_major_axis(&self) -> f64 {
         let ang_moment = self.angular_momentum().norm();
         let e = self.eccentricity_vec().norm();
-        ang_moment.powi(2) / (SOLARGM * (1_f64 - e.powi(2)))
+        (ang_moment.powi(2) / (SOLARGM * (1_f64 - e.powi(2)))).abs()
     }
 
     pub fn orbital_period(&self) -> f64 {
@@ -120,18 +122,27 @@ impl Body {
 
     pub fn eccentric_anomaly(&self) -> f64 {
         let e = self.eccentricity_vec().norm();
-        let theta = self.true_anomaly();
-        2.0 * ((theta.to_radians() / 2.0).tan() / ((1.0 + e) / (1.0 - e)).sqrt())
-            .atan()
-            .to_degrees()
-            + 360.0
+        let theta = self.true_anomaly().to_radians();
+        let val = 2.0 * ((theta / 2.0).tan() / ((e + 1.0) / (e - 1.0).sqrt()));
+        if e < 1.0 {
+            return val.atan().to_degrees() + 360.0;
+        } else if e > 1.0 {
+            return ((theta.cos() + e) / (1.0 + e * theta.cos())).acosh();
+        } else {
+            return 0.0;
+        }
     }
 
     pub fn time_since_periapsis(&self) -> f64 {
-        let E = self.eccentric_anomaly().to_radians();
+        let E = self.eccentric_anomaly();
         let a = self.semi_major_axis();
         let e = self.eccentricity_vec().norm();
-        (a.powi(3) / SOLARGM).sqrt() * (E - e * E.sin())
+        if e < 1.0 {
+            return ((a.powi(3) / SOLARGM).sqrt() * (E.to_radians() - e * E.to_radians().sin()))
+                .abs();
+        } else {
+            return ((a.powi(3) / SOLARGM).sqrt() * (E - e * E.sinh())).abs();
+        }
     }
 
     /// Return the mean anomaly at a certain time from current position
