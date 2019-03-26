@@ -62,6 +62,8 @@ fn main() {
         .expect("Could not invert B frame matrix.");
     let v_b = Vector3::new(new_horizons.velocity.dot(&b_b), 0.0, 0.0);
 
+    let f_anom = (100.0 )
+
     printer!("A-B-C", v => e_zeta);
     printer!("D-E-F", v => e_eta);
     printer!("G-H-I", v => e_xi);
