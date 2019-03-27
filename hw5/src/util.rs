@@ -5,7 +5,7 @@ extern crate nalgebra;
 use nalgebra::{Matrix3, Vector3};
 use std::f64::consts::PI;
 
-const SOLARGM: f64 = 1.32712440042e11;
+const SOLARGM: f64 = 1.328905188132376e11;
 
 /**
  * OrbitType is used to abstract away some of the functions that depend on
@@ -21,7 +21,9 @@ pub enum OrbitType {
 }
 
 impl OrbitType {
-    // return the orbit type given the eccentricity
+    /// Return the orbit type given the eccentricity, Body::new
+    /// uses this function to set the orbit type when an instance
+    /// is constructed
     pub fn new(eccentricity: f64) -> OrbitType {
         if eccentricity == 0.0 {
             return OrbitType::Circular;
@@ -209,7 +211,7 @@ impl Body {
     }
 
     pub fn ascending_node(&self) -> Vector3<f64> {
-        let k: Vector3<f64> = Vector3::new(0.0, 0.0, 1.0);
+        let k = Vector3::new(0.0, 0.0, 1.0);
         k.cross(&self.angular_momentum())
     }
 
@@ -218,9 +220,9 @@ impl Body {
         let e = self.eccentricity_vector();
         let omega = (n.dot(&e) / (n.norm() * e.norm())).acos();
         if e[2] < 0.0 {
-            omega.to_degrees()
-        } else {
             (2.0 * PI - omega).to_degrees()
+        } else {
+            omega.to_degrees()
         }
     }
 
@@ -288,3 +290,4 @@ fn hyper_kepler_iterate(init: f64, nt: f64, eccen: f64) -> f64 {
     }
     return e;
 }
+
