@@ -33,8 +33,9 @@ fn main() {
         ),
     );
 
-    let julian = date!(2019, 3, 23, 8, 0, 0);
-    let (year, month, day, hour, minute, second) = date!(julian);
+    let julian = 2458566.333333330;
+    let julian_test = date!(2019, 3, 23, 19, 59, 59);
+    let greg_date = date!(julian_test);
 
     printer!("A-B-C", v => earth.position);
     printer!("D-E-F", v => earth.velocity);
@@ -43,7 +44,7 @@ fn main() {
     printer!("I", s => earth.inclination());
     printer!("J", s => earth.argument_of_periapsis());
     printer!("K", s => earth.argument_of_ascending_node());
-    printer!("Ascending Node", v => earth.ascending_node());
     printer!("Julian Date", s => julian);
-
+    printer!("Julian Test", s => julian_test);
+    println!("{}", greg_date);
 }
