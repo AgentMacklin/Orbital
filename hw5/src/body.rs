@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_doc_comments)]
 
-extern crate nalgebra;
 use nalgebra::{Matrix3, Vector3};
 use std::f64::consts::PI;
 
@@ -290,4 +289,3 @@ fn hyper_kepler_iterate(init: f64, nt: f64, eccen: f64) -> f64 {
     }
     return e;
 }
-

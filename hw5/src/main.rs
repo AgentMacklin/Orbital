@@ -5,17 +5,16 @@
  * Austen LeBeau
  * ENGR 3310-002
  */
-extern crate nalgebra;
 use nalgebra::Vector3;
 
-extern crate colored;
+// extern crate colored;
 use colored::*;
 
 #[macro_use]
 mod macros;
-
-mod util;
-use self::util::*;
+mod body;
+mod date;
+use body::Body;
 
 const DAYTOSEC: f64 = 24.0 * 3600.0;
 
