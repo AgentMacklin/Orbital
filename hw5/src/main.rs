@@ -32,7 +32,7 @@ fn main() {
         ),
     );
 
-    let current_julian = date!(2019-03-23 20:00:00);
+    let current_julian = date!(2019-03-23 19:59:59);
     let new_julian = current_julian + 10000.35615;
     let new_julian_secs = new_julian * DAYTOSEC;
     let greg_date = date!(new_julian);
@@ -45,5 +45,5 @@ fn main() {
     printer!("J", s => earth.argument_of_periapsis());
     printer!("K", s => earth.argument_of_ascending_node());
     printer!("L", s => earth.true_anomaly_at_time(new_julian_secs));
-    println!("{}", greg_date);
+    println!("{}\n{}", macros::underline("Gregorian Date").cyan(), greg_date);
 }

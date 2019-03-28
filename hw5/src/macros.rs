@@ -1,7 +1,11 @@
 /**
  * Macros that make some operations more convenient.
  */
-use super::date::*;
+// use super::date::*;
+
+pub fn underline(string: &str) -> String {
+    format!("{}\n{}", string, "-".repeat(string.len()))
+}
 
 /* Macro that makes it more convenient to print out results */
 macro_rules! printer {

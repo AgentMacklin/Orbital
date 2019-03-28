@@ -14,25 +14,19 @@ impl std::fmt::Display for Gregorian {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "{}\n  \
-             Year:    {:>4}\n  \
-             Month:   {:>4}\n  \
-             Day:     {:>4}\n  \
-             Hour:    {:>4}\n  \
-             Minutes: {:>4}\n  \
-             Seconds: {:>4}",
-            "Gregorian Date:".cyan(),
-            self.year,
-            self.month,
-            self.day,
-            self.hour,
-            self.minute,
-            self.second
+            "\
+             Year:      {}\n\
+             Month:     {}\n\
+             Day:       {}\n\
+             Hour:      {}\n\
+             Minutes:   {}\n\
+             Seconds:   {}",
+            self.year, self.month, self.day, self.hour, self.minute, self.second
         )
     }
 }
 /**
- * yikes, I'm not sure how I ever got this to work
+ * Convert julian date to gregorian, returns a Gregorian struct
  */
 pub fn julian_to_greg(julian: f64) -> Gregorian {
     let mut l_months = vec![
@@ -44,7 +38,7 @@ pub fn julian_to_greg(julian: f64) -> Gregorian {
     let mut days = (julian - 2_415_019.5) - (365.0 * (year - 1900.0) + leap_years);
     if days < 1.0 {
         year -= 1.0;
-        leap_years = (0.25 * (year - 1900.0 - 1.0));
+        leap_years = 0.25 * (year - 1900.0 - 1.0);
         days = (julian - 2_415_019.5) - (365.0 * (year - 1900.0) + leap_years);
     }
     if year % 4.0 == 0.0 {

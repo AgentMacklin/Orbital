@@ -2,6 +2,7 @@
 #![allow(unused_doc_comments)]
 
 use nalgebra::{Matrix3, Vector3};
+use roots::{find_root_newton_raphson, SimpleConvergency};
 use std::f64::consts::PI;
 
 const SOLARGM: f64 = 1.328905188132376e11;
@@ -40,7 +41,7 @@ impl OrbitType {
 pub struct Body {
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
-    pub orbitType: OrbitType,
+    pub orbit_type: OrbitType,
 }
 
 /* Adds methods to Body struct */
@@ -52,7 +53,7 @@ impl Body {
         Body {
             position: position,
             velocity: velocity,
-            orbitType: OrbitType::new(e),
+            orbit_type: OrbitType::new(e),
         }
     }
 
@@ -168,40 +169,38 @@ impl Body {
         2.0 * ((theta.to_radians() / 2.0).tan() / ((1.0 + e) / (1.0 - e)).sqrt())
             .atan()
             .to_degrees()
-            + 360.0
     }
 
     pub fn time_since_periapsis(&self) -> f64 {
-        let E = self.eccentric_anomaly().to_radians();
+        let e_anom = self.eccentric_anomaly().to_radians();
         let a = self.semi_major_axis();
         let e = self.eccentricity();
-        (a.powi(3) / SOLARGM).sqrt() * (E - e * E.sin())
+        (a.powi(3) / SOLARGM).sqrt() * (e_anom - e * e_anom.sin())
     }
 
     /// Return the mean anomaly at a certain time from current position
     pub fn mean_anomaly(&self, time: f64) -> f64 {
-        let n = (2.0 * PI) / self.orbital_period();
-        n * (time + self.time_since_periapsis())
+        let n = (SOLARGM / self.semi_major_axis().powi(3)).sqrt();
+        (n * time).to_degrees()
     }
 
     /// The eccentric anomaly at a certain time
-    pub fn eccen_anom_at_time(&self, time: f64) -> f64 {
-        let nt = (self.time_since_periapsis() + time)
-            * (SOLARGM / self.semi_major_axis().powi(3)).sqrt();
-        let eccen = self.eccentricity();
-        self.kepler(0.0, time).expect("Invalid orbit:").to_degrees()
+    pub fn eccentric_anomaly_at_time(&self, time: f64) -> f64 {
+        self.kepler(0.0, time).expect("Invalid orbit:")
     }
 
-    pub fn eccen_to_true_anomaly(&self, eccen_anom: f64) -> f64 {
+    pub fn eccentric_to_true_anomaly(&self, e_anom: f64) -> f64 {
         let e = self.eccentricity();
-        2.0 * (((1.0 + e) / (1.0 - e)).sqrt() * (eccen_anom / 2.0).tan())
-            .atan()
+        // let sqrt_val = ((1.0 + e) / (1.0 - e)).sqrt();
+        // 2.0 * (sqrt_val * (e_anom / 2.0).tan()).atan().to_degrees()
+        ((e_anom.cos() - e) / (1.0 - e * e_anom.cos()))
+            .acos()
             .to_degrees()
     }
 
     pub fn true_anomaly_at_time(&self, time: f64) -> f64 {
-        let eccen_anom = self.eccen_anom_at_time(time);
-        return self.eccen_to_true_anomaly(eccen_anom);
+        let e_anom = self.eccentric_anomaly_at_time(time).to_radians();
+        return self.eccentric_to_true_anomaly(e_anom);
     }
 
     pub fn eccentricity(&self) -> f64 {
@@ -242,15 +241,15 @@ impl Body {
     }
 
     pub fn kepler(&self, init: f64, time: f64) -> Result<f64, &str> {
-        let mean_anom = self.mean_anomaly(time);
+        let mean_anom = self.mean_anomaly(time).to_radians();
         let e = self.eccentricity();
-        match &self.orbitType {
-            Elliptic => Ok(elliptic_kepler_iterate(init, mean_anom, e)),
-            Hyperbolic => Ok(hyper_kepler_iterate(init, mean_anom, e)),
+        match &self.orbit_type {
+            OrbitType::Elliptic => Ok(elliptic_kepler(init, mean_anom, e)),
+            OrbitType::Hyperbolic => Ok(hyper_kepler_iterate(init, mean_anom, e)),
             // Technically you could use other equations for these,
             // but returning errors for now
-            Circular => Err("Cannot use Kepler's equation with a circular orbit."),
-            Parabolic => Err("Cannot use Kepler's equation with a parabolic orbit."),
+            OrbitType::Circular => Err("Cannot use Kepler's equation with a circular orbit."),
+            OrbitType::Parabolic => Err("Cannot use Kepler's equation with a parabolic orbit."),
         }
     }
 }
@@ -259,21 +258,16 @@ impl Body {
  * Some of the kepler functions below. Body matches on its orbit type
  * and uses the correct function to return the correct eccentric anomaly
  */
-fn elliptic_kepler(e: f64, nt: f64, eccen: f64) -> f64 {
-    let delta_e = (e - eccen * e.sin() - nt) / (1.0 - eccen * e.cos());
-    return e - delta_e;
-}
-
-fn elliptic_kepler_iterate(init: f64, nt: f64, eccen: f64) -> f64 {
-    let mut e_0 = init;
-    let mut e = elliptic_kepler(e_0, nt, eccen);
-
-    while (e - e_0).abs() > 1e-12 {
-        e_0 = e;
-        e = elliptic_kepler(e_0, nt, eccen);
-    }
-
-    return e;
+fn elliptic_kepler(init: f64, nt: f64, eccen: f64) -> f64 {
+    let kep = |e: f64| e - eccen * e.sin() - nt;
+    let kep_d = |e: f64| 1.0 - eccen * e.cos();
+    let mut convergence = SimpleConvergency {
+        eps: 1e-15f64,
+        max_iter: 100,
+    };
+    return find_root_newton_raphson(init, &kep, &kep_d, &mut convergence)
+        .unwrap()
+        .to_degrees();
 }
 
 fn hyper_kepler(e: f64, nt: f64, eccen: f64) -> f64 {
