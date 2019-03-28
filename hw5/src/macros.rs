@@ -1,6 +1,7 @@
 /**
  * Macros that make some operations more convenient.
  */
+use super::date::*;
 
 /* Macro that makes it more convenient to print out results */
 macro_rules! printer {
@@ -35,10 +36,11 @@ macro_rules! printer {
 }
 
 macro_rules! date {
-    // Going from Gregorian date to Julian date
-    ($year:expr, $month:expr, $day:expr, $hours:expr, $minutes:expr, $seconds:expr) => {
-        (367.0 * $year as f64) - ((7.0 * (($month as f64 + 9.0) / 12.0).floor()) / 4.0).floor()
-            + ((275.0 * $month as f64) / 9.0).floor()
+    // Going from Gregorian date to Julian date. It has the same date format as Horizons
+    ($year:literal-$month:literal-$day:literal $hours:literal:$minutes:literal:$seconds:literal) => {
+        (367.0 * $year as f64)
+            - 7.0 * ((($year as f64 + ($month as f64 + 9.0) / 12.0).trunc()) / 4.0).trunc()
+            + ((275.0 * $month as f64) / 9.0).trunc()
             + 1_721_013.5
             + $day as f64
             + ((((($seconds as f64 / 60.0) + $minutes as f64) / 60.0) + $hours as f64) / 24.0);

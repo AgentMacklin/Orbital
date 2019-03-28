@@ -32,9 +32,10 @@ fn main() {
         ),
     );
 
-    let julian = 2458566.333333330;
-    let julian_test = date!(2019, 3, 23, 19, 59, 59);
-    let greg_date = date!(julian_test);
+    let current_julian = date!(2019-03-23 20:00:00);
+    let new_julian = current_julian + 10000.35615;
+    let new_julian_secs = new_julian * DAYTOSEC;
+    let greg_date = date!(new_julian);
 
     printer!("A-B-C", v => earth.position);
     printer!("D-E-F", v => earth.velocity);
@@ -43,7 +44,6 @@ fn main() {
     printer!("I", s => earth.inclination());
     printer!("J", s => earth.argument_of_periapsis());
     printer!("K", s => earth.argument_of_ascending_node());
-    printer!("Julian Date", s => julian);
-    printer!("Julian Test", s => julian_test);
+    printer!("L", s => earth.true_anomaly_at_time(new_julian_secs));
     println!("{}", greg_date);
 }

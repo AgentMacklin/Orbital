@@ -189,7 +189,7 @@ impl Body {
         let nt = (self.time_since_periapsis() + time)
             * (SOLARGM / self.semi_major_axis().powi(3)).sqrt();
         let eccen = self.eccentricity();
-        elliptic_kepler_iterate(0.0, nt, eccen).to_degrees()
+        self.kepler(0.0, time).expect("Invalid orbit:").to_degrees()
     }
 
     pub fn eccen_to_true_anomaly(&self, eccen_anom: f64) -> f64 {
@@ -197,6 +197,11 @@ impl Body {
         2.0 * (((1.0 + e) / (1.0 - e)).sqrt() * (eccen_anom / 2.0).tan())
             .atan()
             .to_degrees()
+    }
+
+    pub fn true_anomaly_at_time(&self, time: f64) -> f64 {
+        let eccen_anom = self.eccen_anom_at_time(time);
+        return self.eccen_to_true_anomaly(eccen_anom);
     }
 
     pub fn eccentricity(&self) -> f64 {
