@@ -5,7 +5,7 @@
  * Austen LeBeau
  * ENGR 3310-002
  */
-use nalgebra::Vector3;
+use nalgebra::{Matrix3, Vector3};
 
 // extern crate colored;
 use colored::*;
@@ -45,5 +45,10 @@ fn main() {
     printer!("J", s => earth.argument_of_periapsis());
     printer!("K", s => earth.argument_of_ascending_node());
     printer!("L", s => earth.true_anomaly_at_time(new_julian_secs));
-    println!("{}\n{}", macros::underline("Gregorian Date").cyan(), greg_date);
+    println!(
+        "{}\n{}",
+        macros::underline("Gregorian Date").cyan(),
+        greg_date
+    );
+    printer!("Test Matrix", m => Matrix3::new(0.0, 0.0, 0.0, 0.0, 0.0, 123100.0, 0.3466, 0.456574, 0.32));
 }
