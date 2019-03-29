@@ -4,6 +4,8 @@
 use nalgebra::{Matrix3, Vector3};
 use roots::{find_root_newton_raphson, SimpleConvergency};
 use std::f64::consts::PI;
+use std::fmt;
+use std::process::exit;
 
 const SOLARGM: f64 = 1.328905188132376e11;
 
@@ -37,7 +39,6 @@ impl OrbitType {
     }
 }
 
-#[derive(Debug)]
 pub struct Body {
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
@@ -186,7 +187,13 @@ impl Body {
 
     /// The eccentric anomaly at a certain time
     pub fn eccentric_anomaly_at_time(&self, time: f64) -> f64 {
-        self.kepler(0.0, time).expect("Invalid orbit:")
+        match self.kepler(0.0, time) {
+            Ok(num) => num.to_degrees(),
+            Err(e) => {
+                eprintln!("Invalid orbit: {}\n", e);
+                return std::f64::NAN;
+            }
+        }
     }
 
     pub fn eccentric_to_true_anomaly(&self, e_anom: f64) -> f64 {
@@ -245,9 +252,7 @@ impl Body {
         let e = self.eccentricity();
         match &self.orbit_type {
             OrbitType::Elliptic => Ok(elliptic_kepler(init, mean_anom, e)),
-            OrbitType::Hyperbolic => Ok(hyper_kepler_iterate(init, mean_anom, e)),
-            // Technically you could use other equations for these,
-            // but returning errors for now
+            OrbitType::Hyperbolic => Ok(hyper_kepler(init, mean_anom, e)),
             OrbitType::Circular => Err("Cannot use Kepler's equation with a circular orbit."),
             OrbitType::Parabolic => Err("Cannot use Kepler's equation with a parabolic orbit."),
         }
@@ -259,32 +264,27 @@ impl Body {
  * and uses the correct function to return the correct eccentric anomaly
  */
 fn elliptic_kepler(init: f64, nt: f64, eccen: f64) -> f64 {
+    let tolerance = 1e-15;
     let kep = |e: f64| e - eccen * e.sin() - nt;
     let kep_d = |e: f64| 1.0 - eccen * e.cos();
-    let mut convergence = SimpleConvergency {
-        eps: 1e-15f64,
-        max_iter: 100,
-    };
-    return find_root_newton_raphson(init, &kep, &kep_d, &mut convergence)
-        .unwrap()
-        .to_degrees();
-}
-
-fn hyper_kepler(e: f64, nt: f64, eccen: f64) -> f64 {
-    let delta_e = (eccen * e.sinh() - nt - e) / (eccen * e.cosh() - 1.0);
-    return e - delta_e;
-}
-
-fn hyper_kepler_iterate(init: f64, nt: f64, eccen: f64) -> f64 {
     let mut e_0 = init;
-    let mut e = hyper_kepler(e_0, nt, eccen);
-
-    while (e - e_0).abs() > 1e-12 {
+    let mut e = e_0 - kep(e_0) / kep_d(e_0);
+    while (e - e_0).abs() > tolerance {
         e_0 = e;
-        e = hyper_kepler(e_0, nt, eccen);
-        if e == e_0 {
-            return e;
-        }
+        e = e_0 - kep(e_0) / kep_d(e_0);
+    }
+    return e;
+}
+
+fn hyper_kepler(init: f64, nt: f64, eccen: f64) -> f64 {
+    let tolerance = 1e-15;
+    let kep = |e: f64| eccen * e.sinh() - nt - e;
+    let kep_d = |e: f64| eccen * e.cosh() - 1.0;
+    let mut e_0 = init;
+    let mut e = e_0 - kep(e_0) / kep_d(e_0);
+    while (e - e_0).abs() > tolerance {
+        e_0 = e;
+        e = e_0 - kep(e_0) / kep_d(e_0);
     }
     return e;
 }

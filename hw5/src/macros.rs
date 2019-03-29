@@ -30,8 +30,12 @@ macro_rules! printer {
 
     // print matrix
     ($msg:expr, m => $val:expr) => {
-        println!("\n{}:", $msg.cyan());
-        println!("{}", $val);
+        println!("{}:", $msg.cyan());
+        for i in 0..3 {
+            let row = $val.row(i);
+            println!("{:>13.6e} {:>13.6e} {:>13.6e}", row[0], row[1], row[2]);
+        }
+        println!();
     };
 }
 
