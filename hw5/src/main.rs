@@ -14,7 +14,7 @@ use colored::*;
 mod macros;
 mod body;
 mod date;
-use body::Body;
+use body::{Body, OrbitType};
 
 const DAYTOSEC: f64 = 24.0 * 3600.0;
 
@@ -32,7 +32,6 @@ fn main() {
         ),
     );
 
-
     let current_julian = date!(2019-03-23 20:00:00);
     let new_julian = current_julian + 10000.35615;
     let new_julian_secs = new_julian * DAYTOSEC;
@@ -46,10 +45,11 @@ fn main() {
     printer!("I", s => earth.inclination());
     printer!("J", s => earth.argument_of_periapsis());
     printer!("K", s => earth.argument_of_ascending_node());
-    printer!("L", s => earth.true_anomaly_at_time(new_julian_secs).to_degrees());
+    printer!("L", s => earth.true_anomaly_at_time(new_julian_secs));
     println!(
         "{}\n{}\n",
         macros::underline("Gregorian Date").cyan(),
         greg_date
     );
+    printer!("Transformation Matrix", m => trans);
 }

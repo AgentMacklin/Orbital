@@ -10,6 +10,7 @@
 use nalgebra::{Matrix3, Vector3};
 use std::f64::consts::PI;
 
+use colored::*;
 const DAYTOSEC: f64 = 24.0 * 3600.0;
 const SOLARGM: f64 = 1.328905188132376e11;
 
@@ -43,6 +44,7 @@ impl OrbitType {
     }
 }
 
+#[derive(Debug)]
 pub struct Body {
     pub position: Vector3<f64>,
     pub velocity: Vector3<f64>,
@@ -75,7 +77,7 @@ impl Body {
         let posit = self.position.normalize();
         let val = e_vec.dot(&posit) / (e_vec.norm() * posit.norm());
         if posit.dot(&self.velocity.normalize()) < 0.0 {
-            return (2.0 * PI - val.acos());
+            return 2.0 * PI - val.acos();
         } else {
             return val.acos();
         }
@@ -129,7 +131,7 @@ impl Body {
     pub fn position_and_velocity(&self, angle: f64) -> (Vector3<f64>, Vector3<f64>) {
         let r = self.position_at_angle(angle);
         let v = self.velocity_at_angle(angle);
-        let tht = (angle - self.true_anomaly());
+        let tht = angle - self.true_anomaly();
         let trans = Matrix3::from_rows(&[
             Vector3::new(tht.cos(), -tht.sin(), 0.0).transpose(),
             Vector3::new(tht.sin(), tht.cos(), 0.0).transpose(),
@@ -152,23 +154,41 @@ impl Body {
     }
 
     pub fn three_one_three_transform(&self) -> Matrix3<f64> {
-        let omega = self.argument_of_periapsis().to_radians();
-        let inc = self.inclination().to_radians();
-        let tht = self.argument_of_ascending_node().to_radians();
+        let omega = self.argument_of_periapsis();
+        let inc = self.inclination();
+        let tht = self.argument_of_ascending_node();
         let m_c = Matrix3::new(
-            omega.cos(),  omega.sin(), 0.0,
-           -omega.sin(),  omega.cos(), 0.0,
-            0.0,          0.0,         1.0,
+            omega.cos(),
+            omega.sin(),
+            0.0,
+            -omega.sin(),
+            omega.cos(),
+            0.0,
+            0.0,
+            0.0,
+            1.0,
         );
         let m_b = Matrix3::new(
-            1.0,  0.0,       0.0,
-            0.0,  inc.cos(), inc.sin(),
-            0.0, -inc.sin(), inc.cos(),
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            inc.cos(),
+            inc.sin(),
+            0.0,
+            -inc.sin(),
+            inc.cos(),
         );
         let m_a = Matrix3::new(
-            tht.cos(), tht.sin(), 0.0,
-           -tht.sin(), tht.cos(), 0.0,
-            0.0,       0.0,       1.0,
+            tht.cos(),
+            tht.sin(),
+            0.0,
+            -tht.sin(),
+            tht.cos(),
+            0.0,
+            0.0,
+            0.0,
+            1.0,
         );
 
         return m_c * m_b * m_a;
@@ -214,7 +234,7 @@ impl Body {
         match self.kepler(time) {
             Ok(num) => num,
             Err(e) => {
-                eprintln!("Invalid orbit: {}\n", e);
+                eprintln!("{}: {}\n", "Invalid Orbit".red(), e);
                 return std::f64::NAN;
             }
         }
@@ -238,8 +258,7 @@ impl Body {
 
     pub fn inclination(&self) -> f64 {
         let h = self.angular_momentum();
-        // h[2] is the z component of the vector
-        (h[2] / h.norm()).acos()
+        (h[2] / h.norm()).acos() // h[2] is the z component of the vector
     }
 
     pub fn ascending_node(&self) -> Vector3<f64> {
@@ -252,7 +271,7 @@ impl Body {
         let e = self.eccentricity_vector();
         let omega = (n.dot(&e) / (n.norm() * e.norm())).acos();
         if e[2] < 0.0 {
-            (2.0 * PI - omega)
+            2.0 * PI - omega
         } else {
             omega
         }
@@ -265,7 +284,7 @@ impl Body {
         if n_y >= 0.0 {
             (n_x / n.norm()).acos()
         } else {
-            (2.0 * PI - (n_x / n.norm()).acos())
+            2.0 * PI - (n_x / n.norm()).acos()
         }
     }
 
@@ -276,8 +295,8 @@ impl Body {
         match &self.orbit_type {
             OrbitType::Elliptic => Ok(elliptic_kepler(mean_anom, e)),
             OrbitType::Hyperbolic => Ok(hyper_kepler(mean_anom, e)),
-            OrbitType::Circular => Err("Cannot use Kepler's equation with a circular orbit."),
-            OrbitType::Parabolic => Err("Cannot use Kepler's equation with a parabolic orbit."),
+            OrbitType::Circular => Err("cannot use Keler's equation with a circular orbit."),
+            OrbitType::Parabolic => Err("cannot use Kepler's equation with a parabolic orbit."),
         }
     }
 }
