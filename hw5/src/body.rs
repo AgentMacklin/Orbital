@@ -2,7 +2,6 @@
 #![allow(unused_doc_comments)]
 
 use nalgebra::{Matrix3, Vector3};
-use roots::{find_root_newton_raphson, SimpleConvergency};
 use std::f64::consts::PI;
 use std::fmt;
 use std::process::exit;
@@ -149,6 +148,29 @@ impl Body {
         Matrix3::from_rows(&[e_r.transpose(), e_tht.transpose(), e_h.transpose()])
     }
 
+    pub fn three_one_three_transform(&self) -> Matrix3<f64> {
+        let omega = self.argument_of_periapsis().to_radians();
+        let inc = self.inclination().to_radians();
+        let tht = self.argument_of_ascending_node().to_radians();
+        let m_c = Matrix3::new(
+            omega.cos(),  omega.sin(), 0.0,
+           -omega.sin(),  omega.cos(), 0.0,
+            0.0,          0.0,         1.0,
+        );
+        let m_b = Matrix3::new(
+            1.0,  0.0,       0.0,
+            0.0,  inc.cos(), inc.sin(),
+            0.0, -inc.sin(), inc.cos(),
+        );
+        let m_a = Matrix3::new(
+            tht.cos(), tht.sin(), 0.0,
+           -tht.sin(), tht.cos(), 0.0,
+            0.0,       0.0,       1.0,
+        );
+
+        return m_c * m_b * m_a;
+    }
+
     pub fn semi_major_axis(&self) -> f64 {
         let ang_moment = self.angular_momentum().norm();
         let e = self.eccentricity();
@@ -181,8 +203,9 @@ impl Body {
 
     /// Return the mean anomaly at a certain time from current position
     pub fn mean_anomaly(&self, time: f64) -> f64 {
+        let t_periapsis = self.time_since_periapsis();
         let n = (SOLARGM / self.semi_major_axis().powi(3)).sqrt();
-        (n * time).to_degrees()
+        (n * (time - t_periapsis)).to_degrees()
     }
 
     /// The eccentric anomaly at a certain time

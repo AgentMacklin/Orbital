@@ -7,4 +7,3 @@ edition = "2018"
 [dependencies]
 nalgebra = "0.17.2"
 colored = "1.7.0"
-roots = "0.0.5"
