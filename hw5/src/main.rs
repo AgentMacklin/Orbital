@@ -5,7 +5,7 @@
  * Austen LeBeau
  * ENGR 3310-002
  */
-use nalgebra::{Matrix3, Vector3};
+use nalgebra::Vector3;
 
 // extern crate colored;
 use colored::*;
@@ -14,7 +14,7 @@ use colored::*;
 mod macros;
 mod body;
 mod date;
-use body::{Body, OrbitType};
+use body::Body;
 
 const DAYTOSEC: f64 = 24.0 * 3600.0;
 
@@ -46,12 +46,10 @@ fn main() {
     printer!("I", s => earth.inclination());
     printer!("J", s => earth.argument_of_periapsis());
     printer!("K", s => earth.argument_of_ascending_node());
-    printer!("L", s => earth.true_anomaly_at_time(new_julian_secs));
-    println!("Julian: {}", current_julian);
+    printer!("L", s => earth.true_anomaly_at_time(new_julian_secs).to_degrees());
     println!(
-        "\n{}\n{}\n",
+        "{}\n{}\n",
         macros::underline("Gregorian Date").cyan(),
         greg_date
     );
-    printer!("IB", m => trans);
 }

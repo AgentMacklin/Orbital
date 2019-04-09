@@ -1,4 +1,6 @@
-use colored::*;
+/**
+ * Handles julian and gregorian date stuff
+ */
 
 pub struct Gregorian {
     year: u32,
@@ -6,7 +8,7 @@ pub struct Gregorian {
     day: u32,
     hour: u32,
     minute: u32,
-    second: u32,
+    second: f64,
 }
 
 impl std::fmt::Display for Gregorian {
@@ -20,7 +22,7 @@ impl std::fmt::Display for Gregorian {
              Day:       {}\n\
              Hour:      {}\n\
              Minutes:   {}\n\
-             Seconds:   {}",
+             Seconds:   {:.2}",
             self.year, self.month, self.day, self.hour, self.minute, self.second
         )
     }
@@ -58,13 +60,13 @@ pub fn julian_to_greg(julian: f64) -> Gregorian {
     let tau: f64 = (days - day_of_year) * 24.0;
     let hour = tau.trunc();
     let minute = ((tau - hour) * 60.0).trunc();
-    let second = ((tau - hour - (minute / 60.0)) * 3600.0).trunc();
+    let second = (tau - hour - (minute / 60.0)) * 3600.0;
     Gregorian {
         year: year as u32,
         month: month as u32,
         day: day as u32,
         hour: hour as u32,
         minute: minute as u32,
-        second: second as u32,
+        second: second,
     }
 }

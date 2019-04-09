@@ -1,11 +1,16 @@
 #![allow(dead_code)]
 #![allow(unused_doc_comments)]
 
+/**
+ * body.rs contains the Body struct and implements methods for it. A body struct contains only the
+ * position and velocity vectors of the body, other parameters are calculated using methods. A body
+ * is instantiated using using the Body::new() method, which also determines the type of orbit the
+ * body has at the same time. orbit_type does not have to be given manually.
+ */
 use nalgebra::{Matrix3, Vector3};
 use std::f64::consts::PI;
-use std::fmt;
-use std::process::exit;
 
+const DAYTOSEC: f64 = 24.0 * 3600.0;
 const SOLARGM: f64 = 1.328905188132376e11;
 
 /**
@@ -47,7 +52,7 @@ pub struct Body {
 /* Adds methods to Body struct */
 impl Body {
     pub fn new(position: Vector3<f64>, velocity: Vector3<f64>) -> Body {
-        // Used for determining what kind of orbit the body is currently in
+        // h and e are used for determining what kind of orbit the body is currently in
         let h = position.cross(&velocity);
         let e = ((velocity.cross(&h) / SOLARGM) - position.normalize()).norm();
         Body {
@@ -57,11 +62,11 @@ impl Body {
         }
     }
 
-    pub fn radial_veloc(&self) -> Vector3<f64> {
+    pub fn radial_velocity(&self) -> Vector3<f64> {
         (self.velocity.dot(&self.position) / self.position.norm_squared()) * self.position
     }
 
-    pub fn tangential_veloc(&self) -> Vector3<f64> {
+    pub fn tangential_velocity(&self) -> Vector3<f64> {
         self.omega().cross(&self.position)
     }
 
@@ -70,9 +75,9 @@ impl Body {
         let posit = self.position.normalize();
         let val = e_vec.dot(&posit) / (e_vec.norm() * posit.norm());
         if posit.dot(&self.velocity.normalize()) < 0.0 {
-            return (2.0 * PI - val.acos()).to_degrees();
+            return (2.0 * PI - val.acos());
         } else {
-            return val.acos().to_degrees();
+            return val.acos();
         }
     }
 
@@ -105,7 +110,7 @@ impl Body {
     pub fn position_at_angle(&self, angle: f64) -> Vector3<f64> {
         let e = self.eccentricity();
         let numer = self.angular_momentum().norm_squared() / SOLARGM;
-        let denom = 1_f64 + (e * (angle.to_radians()).cos());
+        let denom = 1_f64 + (e * (angle).cos());
         let radius = numer / denom;
         Vector3::new(radius, 0.0, 0.0)
     }
@@ -115,8 +120,8 @@ impl Body {
         let e = self.eccentricity();
         let h = self.angular_momentum().norm_squared();
         Vector3::new(
-            (h / p) * e * angle.to_radians().sin(),
-            (h / p) * (1_f64 + e * angle.to_radians().cos()),
+            (h / p) * e * angle.sin(),
+            (h / p) * (1_f64 + e * angle.cos()),
             0.0,
         )
     }
@@ -124,7 +129,7 @@ impl Body {
     pub fn position_and_velocity(&self, angle: f64) -> (Vector3<f64>, Vector3<f64>) {
         let r = self.position_at_angle(angle);
         let v = self.velocity_at_angle(angle);
-        let tht = (angle - self.true_anomaly()).to_radians();
+        let tht = (angle - self.true_anomaly());
         let trans = Matrix3::from_rows(&[
             Vector3::new(tht.cos(), -tht.sin(), 0.0).transpose(),
             Vector3::new(tht.sin(), tht.cos(), 0.0).transpose(),
@@ -135,9 +140,7 @@ impl Body {
 
     // Angle to other body, keep getting the wrong thing anyway, tried everything
     pub fn angle_to(&self, other: &Body) -> f64 {
-        (self.position.dot(&other.position) / (self.position.norm() * other.position.norm()))
-            .acos()
-            .to_degrees()
+        (self.position.dot(&other.position) / (self.position.norm() * other.position.norm())).acos()
     }
 
     /* Return a transformation matrix constructed from body's orbit in inertial frame */
@@ -189,13 +192,11 @@ impl Body {
     pub fn eccentric_anomaly(&self) -> f64 {
         let e = self.eccentricity();
         let theta = self.true_anomaly();
-        2.0 * ((theta.to_radians() / 2.0).tan() / ((1.0 + e) / (1.0 - e)).sqrt())
-            .atan()
-            .to_degrees()
+        2.0 * ((theta / 2.0).tan() / ((1.0 + e) / (1.0 - e)).sqrt()).atan()
     }
 
     pub fn time_since_periapsis(&self) -> f64 {
-        let e_anom = self.eccentric_anomaly().to_radians();
+        let e_anom = self.eccentric_anomaly();
         let a = self.semi_major_axis();
         let e = self.eccentricity();
         (a.powi(3) / SOLARGM).sqrt() * (e_anom - e * e_anom.sin())
@@ -203,15 +204,15 @@ impl Body {
 
     /// Return the mean anomaly at a certain time from current position
     pub fn mean_anomaly(&self, time: f64) -> f64 {
-        let t_periapsis = self.time_since_periapsis();
+        let t_peri = self.time_since_periapsis();
         let n = (SOLARGM / self.semi_major_axis().powi(3)).sqrt();
-        (n * (time - t_periapsis)).to_degrees()
+        (n * (time - t_peri))
     }
 
     /// The eccentric anomaly at a certain time
     pub fn eccentric_anomaly_at_time(&self, time: f64) -> f64 {
-        match self.kepler(0.0, time) {
-            Ok(num) => num.to_degrees(),
+        match self.kepler(time) {
+            Ok(num) => num,
             Err(e) => {
                 eprintln!("Invalid orbit: {}\n", e);
                 return std::f64::NAN;
@@ -222,14 +223,12 @@ impl Body {
     pub fn eccentric_to_true_anomaly(&self, e_anom: f64) -> f64 {
         let e = self.eccentricity();
         // let sqrt_val = ((1.0 + e) / (1.0 - e)).sqrt();
-        // 2.0 * (sqrt_val * (e_anom / 2.0).tan()).atan().to_degrees()
-        ((e_anom.cos() - e) / (1.0 - e * e_anom.cos()))
-            .acos()
-            .to_degrees()
+        // 2.0 * (sqrt_val * (e_anom / 2.0).tan()).atan()
+        ((e_anom.cos() - e) / (1.0 - e * e_anom.cos())).acos()
     }
 
     pub fn true_anomaly_at_time(&self, time: f64) -> f64 {
-        let e_anom = self.eccentric_anomaly_at_time(time).to_radians();
+        let e_anom = self.eccentric_anomaly_at_time(time);
         return self.eccentric_to_true_anomaly(e_anom);
     }
 
@@ -240,7 +239,7 @@ impl Body {
     pub fn inclination(&self) -> f64 {
         let h = self.angular_momentum();
         // h[2] is the z component of the vector
-        (h[2] / h.norm()).acos().to_degrees()
+        (h[2] / h.norm()).acos()
     }
 
     pub fn ascending_node(&self) -> Vector3<f64> {
@@ -253,9 +252,9 @@ impl Body {
         let e = self.eccentricity_vector();
         let omega = (n.dot(&e) / (n.norm() * e.norm())).acos();
         if e[2] < 0.0 {
-            (2.0 * PI - omega).to_degrees()
+            (2.0 * PI - omega)
         } else {
-            omega.to_degrees()
+            omega
         }
     }
 
@@ -264,18 +263,19 @@ impl Body {
         let n_x = n[0];
         let n_y = n[1];
         if n_y >= 0.0 {
-            (n_x / n.norm()).acos().to_degrees()
+            (n_x / n.norm()).acos()
         } else {
-            (2.0 * PI - (n_x / n.norm()).acos()).to_degrees()
+            (2.0 * PI - (n_x / n.norm()).acos())
         }
     }
 
-    pub fn kepler(&self, init: f64, time: f64) -> Result<f64, &str> {
-        let mean_anom = self.mean_anomaly(time).to_radians();
+    /// Return the eccentric anomaly using the appropriate Kepler equation
+    pub fn kepler(&self, time: f64) -> Result<f64, &str> {
+        let mean_anom = self.mean_anomaly(time);
         let e = self.eccentricity();
         match &self.orbit_type {
-            OrbitType::Elliptic => Ok(elliptic_kepler(init, mean_anom, e)),
-            OrbitType::Hyperbolic => Ok(hyper_kepler(init, mean_anom, e)),
+            OrbitType::Elliptic => Ok(elliptic_kepler(mean_anom, e)),
+            OrbitType::Hyperbolic => Ok(hyper_kepler(mean_anom, e)),
             OrbitType::Circular => Err("Cannot use Kepler's equation with a circular orbit."),
             OrbitType::Parabolic => Err("Cannot use Kepler's equation with a parabolic orbit."),
         }
@@ -286,24 +286,24 @@ impl Body {
  * Some of the kepler functions below. Body matches on its orbit type
  * and uses the correct function to return the correct eccentric anomaly
  */
-fn elliptic_kepler(init: f64, nt: f64, eccen: f64) -> f64 {
-    let tolerance = 1e-15;
+fn elliptic_kepler(nt: f64, eccen: f64) -> f64 {
+    let tolerance = 1e-100;
     let kep = |e: f64| e - eccen * e.sin() - nt;
     let kep_d = |e: f64| 1.0 - eccen * e.cos();
-    let mut e_0 = init;
-    let mut e = e_0 - kep(e_0) / kep_d(e_0);
+    let mut e_0 = nt;
+    let mut e = e_0 - (kep(e_0) / kep_d(e_0));
     while (e - e_0).abs() > tolerance {
         e_0 = e;
-        e = e_0 - kep(e_0) / kep_d(e_0);
+        e = e_0 - (kep(e_0) / kep_d(e_0));
     }
     return e;
 }
 
-fn hyper_kepler(init: f64, nt: f64, eccen: f64) -> f64 {
-    let tolerance = 1e-15;
+fn hyper_kepler(nt: f64, eccen: f64) -> f64 {
+    let tolerance = 1e-100;
     let kep = |e: f64| eccen * e.sinh() - nt - e;
     let kep_d = |e: f64| eccen * e.cosh() - 1.0;
-    let mut e_0 = init;
+    let mut e_0 = nt;
     let mut e = e_0 - kep(e_0) / kep_d(e_0);
     while (e - e_0).abs() > tolerance {
         e_0 = e;
