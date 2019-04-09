@@ -5,7 +5,7 @@
  * Austen LeBeau
  * ENGR 3310-002
  */
-use nalgebra::{Matrix3, Vector3};
+use nalgebra::Vector3;
 
 // extern crate colored;
 use colored::*;
@@ -14,7 +14,7 @@ use colored::*;
 mod macros;
 mod body;
 mod date;
-use body::{Body, OrbitType};
+use body::Body;
 
 const DAYTOSEC: f64 = 24.0 * 3600.0;
 
@@ -32,10 +32,10 @@ fn main() {
         ),
     );
 
-    let current_julian = date!(2046-08-09 04:32:51);
-    // let new_julian = current_julian + 10000.35615;
-    // let new_julian_secs = new_julian * DAYTOSEC;
-    // let greg_date = date!(new_julian);
+    let current_julian = date!(2019-03-23 20:00:00);
+    let new_julian = current_julian + 10000.35615;
+    let new_julian_secs = new_julian * DAYTOSEC;
+    let greg_date = date!(new_julian);
 
     printer!("A-B-C", v => earth.position);
     printer!("D-E-F", v => earth.velocity);
@@ -44,11 +44,10 @@ fn main() {
     printer!("I", s => earth.inclination());
     printer!("J", s => earth.argument_of_periapsis());
     printer!("K", s => earth.argument_of_ascending_node());
-    // printer!("L", s => earth.true_anomaly_at_time(new_julian_secs));
-    println!("Julian: {}", current_julian);
-    // println!(
-    //     "{}\n{}\n",
-    //     macros::underline("Gregorian Date").cyan(),
-    //     greg_date
-    // );
+    printer!("L", s => earth.true_anomaly_at_time(new_julian_secs).to_degrees());
+    println!(
+        "{}\n{}\n",
+        macros::underline("Gregorian Date").cyan(),
+        greg_date
+    );
 }
