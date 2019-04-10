@@ -14,6 +14,8 @@ use colored::*;
 const DAYTOSEC: f64 = 24.0 * 3600.0;
 const SOLARGM: f64 = 1.328905188132376e11;
 
+const PI2: f64 = 2.0 * PI;
+
 /**
  * OrbitType is used to abstract away some of the functions that depend on
  * the type of orbit the body is in, like kepler's equation. That way, you
@@ -222,36 +224,6 @@ impl Body {
         (a.powi(3) / SOLARGM).sqrt() * (e_anom - e * e_anom.sin())
     }
 
-    /// Return the mean anomaly at a certain time from current position
-    pub fn mean_anomaly(&self, time: f64) -> f64 {
-        let t_peri = self.time_since_periapsis();
-        let n = (SOLARGM / self.semi_major_axis().powi(3)).sqrt();
-        (n * (time - t_peri))
-    }
-
-    /// The eccentric anomaly at a certain time
-    pub fn eccentric_anomaly_at_time(&self, time: f64) -> f64 {
-        match self.kepler(time) {
-            Ok(num) => num,
-            Err(e) => {
-                eprintln!("{}: {}\n", "Invalid Orbit".red(), e);
-                return std::f64::NAN;
-            }
-        }
-    }
-
-    pub fn eccentric_to_true_anomaly(&self, e_anom: f64) -> f64 {
-        let e = self.eccentricity();
-        // let sqrt_val = ((1.0 + e) / (1.0 - e)).sqrt();
-        // 2.0 * (sqrt_val * (e_anom / 2.0).tan()).atan()
-        ((e_anom.cos() - e) / (1.0 - e * e_anom.cos())).acos()
-    }
-
-    pub fn true_anomaly_at_time(&self, time: f64) -> f64 {
-        let e_anom = self.eccentric_anomaly_at_time(time);
-        return self.eccentric_to_true_anomaly(e_anom);
-    }
-
     pub fn eccentricity(&self) -> f64 {
         self.eccentricity_vector().norm()
     }
@@ -288,6 +260,22 @@ impl Body {
         }
     }
 
+    pub fn true_anomaly_at_time(&self, time: f64) -> f64 {
+        let e_anom = self.eccentric_anomaly_at_time(time);
+        return self.eccentric_to_true_anomaly(e_anom);
+    }
+
+    /// The eccentric anomaly at a certain time
+    pub fn eccentric_anomaly_at_time(&self, time: f64) -> f64 {
+        match self.kepler(time) {
+            Ok(num) => num,
+            Err(e) => {
+                eprintln!("{}: {}\n", "Invalid Orbit".red(), e);
+                return std::f64::NAN;
+            }
+        }
+    }
+
     /// Return the eccentric anomaly using the appropriate Kepler equation
     pub fn kepler(&self, time: f64) -> Result<f64, &str> {
         let mean_anom = self.mean_anomaly(time);
@@ -298,6 +286,20 @@ impl Body {
             OrbitType::Circular => Err("cannot use Keler's equation with a circular orbit."),
             OrbitType::Parabolic => Err("cannot use Kepler's equation with a parabolic orbit."),
         }
+    }
+
+    pub fn eccentric_to_true_anomaly(&self, e_anom: f64) -> f64 {
+        let e = self.eccentricity();
+        // let sqrt_val = ((1.0 + e) / (1.0 - e)).sqrt();
+        // 2.0 * (sqrt_val * (e_anom / 2.0).tan()).atan()
+        ((e_anom.cos() - e) / (1.0 - e * e_anom.cos())).acos() + PI2
+    }
+
+    /// Return the mean anomaly at a certain time from current position
+    pub fn mean_anomaly(&self, time: f64) -> f64 {
+        let t_peri = self.time_since_periapsis();
+        let n = (SOLARGM / self.semi_major_axis().powi(3)).sqrt();
+        n * (time - t_peri)
     }
 }
 

@@ -45,11 +45,8 @@ fn main() {
     printer!("I", s => earth.inclination());
     printer!("J", s => earth.argument_of_periapsis());
     printer!("K", s => earth.argument_of_ascending_node());
-    printer!("L", s => earth.true_anomaly_at_time(new_julian_secs));
-    println!(
-        "{}\n{}\n",
-        macros::underline("Gregorian Date").cyan(),
-        greg_date
-    );
+    printer!("L", s => earth.true_anomaly_at_time(10000.35615 * DAYTOSEC).to_degrees());
+    printer!("tE", s => new_julian_secs);
+    println!("{}\n{}\n", macros::underline("Problem 8").cyan(), greg_date);
     printer!("Transformation Matrix", m => trans);
 }
