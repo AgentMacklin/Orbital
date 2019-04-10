@@ -155,47 +155,6 @@ impl Body {
         Matrix3::from_rows(&[e_r.transpose(), e_tht.transpose(), e_h.transpose()])
     }
 
-    pub fn three_one_three_transform(&self) -> Matrix3<f64> {
-        let omega = self.argument_of_periapsis();
-        let inc = self.inclination();
-        let tht = self.argument_of_ascending_node();
-        let m_c = Matrix3::new(
-            omega.cos(),
-            omega.sin(),
-            0.0,
-            -omega.sin(),
-            omega.cos(),
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-        );
-        let m_b = Matrix3::new(
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            inc.cos(),
-            inc.sin(),
-            0.0,
-            -inc.sin(),
-            inc.cos(),
-        );
-        let m_a = Matrix3::new(
-            tht.cos(),
-            tht.sin(),
-            0.0,
-            -tht.sin(),
-            tht.cos(),
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-        );
-
-        return m_c * m_b * m_a;
-    }
-
     pub fn semi_major_axis(&self) -> f64 {
         let ang_moment = self.angular_momentum().norm();
         let e = self.eccentricity();
@@ -260,14 +219,14 @@ impl Body {
         }
     }
 
-    pub fn true_anomaly_at_time(&self, time: f64) -> f64 {
-        let e_anom = self.eccentric_anomaly_at_time(time);
+    pub fn true_anomaly_at_time(&self, t_naught: f64, time: f64) -> f64 {
+        let e_anom = self.eccentric_anomaly_at_time(t_naught, time);
         return self.eccentric_to_true_anomaly(e_anom);
     }
 
     /// The eccentric anomaly at a certain time
-    pub fn eccentric_anomaly_at_time(&self, time: f64) -> f64 {
-        match self.kepler(time) {
+    pub fn eccentric_anomaly_at_time(&self, t_naught: f64, time: f64) -> f64 {
+        match self.kepler(t_naught, time) {
             Ok(num) => num,
             Err(e) => {
                 eprintln!("{}: {}\n", "Invalid Orbit".red(), e);
@@ -277,8 +236,8 @@ impl Body {
     }
 
     /// Return the eccentric anomaly using the appropriate Kepler equation
-    pub fn kepler(&self, time: f64) -> Result<f64, &str> {
-        let mean_anom = self.mean_anomaly(time);
+    pub fn kepler(&self, t_naught: f64, time: f64) -> Result<f64, &str> {
+        let mean_anom = self.mean_anomaly(t_naught, time);
         let e = self.eccentricity();
         match &self.orbit_type {
             OrbitType::Elliptic => Ok(elliptic_kepler(mean_anom, e)),
@@ -291,15 +250,16 @@ impl Body {
     pub fn eccentric_to_true_anomaly(&self, e_anom: f64) -> f64 {
         let e = self.eccentricity();
         // let sqrt_val = ((1.0 + e) / (1.0 - e)).sqrt();
-        // 2.0 * (sqrt_val * (e_anom / 2.0).tan()).atan()
+        // 2.0 * (sqrt_val * (e_anom / 2.0).tan()).atan() + PI2
         ((e_anom.cos() - e) / (1.0 - e * e_anom.cos())).acos() + PI2
     }
 
     /// Return the mean anomaly at a certain time from current position
-    pub fn mean_anomaly(&self, time: f64) -> f64 {
-        let t_peri = self.time_since_periapsis();
+    pub fn mean_anomaly(&self, t_naught: f64, t: f64) -> f64 {
+        let t_peri = t_naught - self.time_since_periapsis();
+        let time = t_peri + t;
         let n = (SOLARGM / self.semi_major_axis().powi(3)).sqrt();
-        n * (time - t_peri)
+        n * time
     }
 }
 
@@ -331,4 +291,49 @@ fn hyper_kepler(nt: f64, eccen: f64) -> f64 {
         e = e_0 - kep(e_0) / kep_d(e_0);
     }
     return e;
+}
+
+pub fn three_one_three_transform(
+    arg_of_peri: f64,
+    inclination: f64,
+    arg_of_AN: f64,
+) -> Matrix3<f64> {
+    let omega = arg_of_peri;
+    let inc = inclination;
+    let tht = arg_of_AN;
+    let m_c = Matrix3::new(
+        omega.cos(),
+        omega.sin(),
+        0.0,
+        -omega.sin(),
+        omega.cos(),
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    );
+    let m_b = Matrix3::new(
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        inc.cos(),
+        inc.sin(),
+        0.0,
+        -inc.sin(),
+        inc.cos(),
+    );
+    let m_a = Matrix3::new(
+        tht.cos(),
+        tht.sin(),
+        0.0,
+        -tht.sin(),
+        tht.cos(),
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    );
+
+    return m_c * m_b * m_a;
 }

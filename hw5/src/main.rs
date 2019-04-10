@@ -31,12 +31,12 @@ fn main() {
             1.972889032860081E-03,
         ),
     );
-
+    
     let current_julian = date!(2019-03-23 20:00:00);
     let new_julian = current_julian + 10000.35615;
     let new_julian_secs = new_julian * DAYTOSEC;
     let greg_date = date!(new_julian);
-    let trans = earth.three_one_three_transform().try_inverse().unwrap();
+    // let trans = earth.three_one_three_transform().try_inverse().unwrap();
 
     printer!("A-B-C", v => earth.position);
     printer!("D-E-F", v => earth.velocity);
@@ -45,8 +45,7 @@ fn main() {
     printer!("I", s => earth.inclination());
     printer!("J", s => earth.argument_of_periapsis());
     printer!("K", s => earth.argument_of_ascending_node());
-    printer!("L", s => earth.true_anomaly_at_time(10000.35615 * DAYTOSEC).to_degrees());
-    printer!("tE", s => new_julian_secs);
+    printer!("L", s => earth.true_anomaly_at_time(current_julian * DAYTOSEC, new_julian_secs).to_degrees());
     println!("{}\n{}\n", macros::underline("Problem 8").cyan(), greg_date);
-    printer!("Transformation Matrix", m => trans);
+    // printer!("Transformation Matrix", m => trans);
 }
