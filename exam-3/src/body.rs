@@ -12,7 +12,7 @@ use std::f64::consts::PI;
 
 use colored::*;
 const DAYTOSEC: f64 = 24.0 * 3600.0;
-const SOLARGM: f64 = 1.328905188132376e11;
+const SOLARGM: f64 = 2.963092749241593e-4;
 
 const PI2: f64 = 2.0 * PI;
 
