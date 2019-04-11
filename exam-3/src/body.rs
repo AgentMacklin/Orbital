@@ -79,10 +79,36 @@ impl Body {
         let posit = self.position.normalize();
         let val = e_vec.dot(&posit) / (e_vec.norm() * posit.norm());
         if posit.dot(&self.velocity.normalize()) < 0.0 {
-            return 2.0 * PI - val.acos();
+            return PI2 - val.acos();
         } else {
             return val.acos();
         }
+    }
+
+    /// Position vector at a time in the future, starting from now
+    pub fn position_at_time(&self, time: f64) -> Vector3<f64> {
+        let t_anom = self.true_anomaly_at_time(time);
+        let omega = self.argument_of_periapsis() - t_anom;
+        let inc = self.inclination();
+        let tht = self.argument_of_ascending_node();
+        let trans_mat = three_one_three_transform(omega, inc, tht)
+            .try_inverse()
+            .unwrap();
+        let p = self.position_at_angle(t_anom);
+        return trans_mat * p;
+    }
+
+    /// Position vector at a time in the future, starting from now
+    pub fn velocity_at_time(&self, time: f64) -> Vector3<f64> {
+        let t_anom = self.true_anomaly_at_time(time);
+        let omega = self.argument_of_periapsis() - t_anom;
+        let inc = self.inclination();
+        let tht = self.argument_of_ascending_node();
+        let trans_mat = three_one_three_transform(omega, inc, tht)
+            .try_inverse()
+            .unwrap();
+        let v = self.velocity_at_angle(t_anom);
+        return trans_mat * v;
     }
 
     /* points from focus to perigee if I'm not mistaken */
@@ -113,33 +139,15 @@ impl Body {
 
     pub fn position_at_angle(&self, angle: f64) -> Vector3<f64> {
         let e = self.eccentricity();
-        let numer = self.angular_momentum().norm_squared() / SOLARGM;
-        let denom = 1_f64 + (e * (angle).cos());
-        let radius = numer / denom;
+        let p = self.orbital_parameter();
+        let radius = p / (1.0 + e * angle.cos());
         Vector3::new(radius, 0.0, 0.0)
     }
 
     pub fn velocity_at_angle(&self, angle: f64) -> Vector3<f64> {
-        let p = self.orbital_parameter();
+        let coeff = SOLARGM / self.angular_momentum().norm();
         let e = self.eccentricity();
-        let h = self.angular_momentum().norm_squared();
-        Vector3::new(
-            (h / p) * e * angle.sin(),
-            (h / p) * (1_f64 + e * angle.cos()),
-            0.0,
-        )
-    }
-
-    pub fn position_and_velocity(&self, angle: f64) -> (Vector3<f64>, Vector3<f64>) {
-        let r = self.position_at_angle(angle);
-        let v = self.velocity_at_angle(angle);
-        let tht = angle - self.true_anomaly();
-        let trans = Matrix3::from_rows(&[
-            Vector3::new(tht.cos(), -tht.sin(), 0.0).transpose(),
-            Vector3::new(tht.sin(), tht.cos(), 0.0).transpose(),
-            Vector3::new(0.0, 0.0, 1.0).transpose(),
-        ]);
-        (trans * r, trans * v)
+        Vector3::new(coeff * -angle.sin(), coeff * (e + angle.cos()), 0.0)
     }
 
     // Angle to other body, keep getting the wrong thing anyway, tried everything
@@ -233,7 +241,7 @@ impl Body {
 
     pub fn true_anomaly_at_time(&self, time: f64) -> f64 {
         let t_peri = self.time_since_periapsis();
-        let m_anom = self.mean_anomaly((time * DAYTOSEC) + t_peri);
+        let m_anom = self.mean_anomaly(time + t_peri);
         let angle = self.eccentric_from_mean(m_anom);
         return PI2 - self.eccentric_to_true_anomaly(angle);
     }
@@ -279,7 +287,7 @@ impl Body {
  * and uses the correct function to return the correct eccentric anomaly
  */
 fn elliptic_kepler(nt: f64, eccen: f64) -> f64 {
-    let tolerance = 1e-200;
+    let tolerance = 1e-15;
     let kep = |e: f64| e - eccen * e.sin() - nt;
     let kep_d = |e: f64| 1.0 - eccen * e.cos();
     let mut e_0 = 0.0;
@@ -292,7 +300,7 @@ fn elliptic_kepler(nt: f64, eccen: f64) -> f64 {
 }
 
 fn hyper_kepler(nt: f64, eccen: f64) -> f64 {
-    let tolerance = 1e-100;
+    let tolerance = 1e-15;
     let kep = |e: f64| eccen * e.sinh() - nt - e;
     let kep_d = |e: f64| eccen * e.cosh() - 1.0;
     let mut e_0 = nt;
@@ -307,11 +315,11 @@ fn hyper_kepler(nt: f64, eccen: f64) -> f64 {
 pub fn three_one_three_transform(
     arg_of_peri: f64,
     inclination: f64,
-    arg_of_AN: f64,
+    arg_of_an: f64,
 ) -> Matrix3<f64> {
     let omega = arg_of_peri;
     let inc = inclination;
-    let tht = arg_of_AN;
+    let tht = arg_of_an;
     let m_c = Matrix3::new(
         omega.cos(),
         omega.sin(),
