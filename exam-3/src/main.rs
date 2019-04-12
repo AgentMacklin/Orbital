@@ -26,12 +26,8 @@ const DAYTOSEC: f64 = 24.0 * 3600.0;
 fn main() {
     // Style for progress bars, it's really stupid but I like it
     let style = ProgressStyle::default_bar()
-        .template("  [{elapsed_precise}] [{bar:40.cyan/blue}] [{eta_precise}]")
+        .template("[{bar:60.cyan/blue}]")
         .progress_chars("#>-");
-
-    let spinner_style = ProgressStyle::default_spinner()
-        .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈")
-        .template("  {spinner:blue} {wide_msg}");
 
     let pluto = Body::new(
         Vector3::new(
@@ -73,19 +69,13 @@ fn main() {
     let mut neptune_radius = neptune.position_at_time(day).norm();
     let mut pluto_radius = pluto.position_at_time(day).norm();
 
-    let e_spinner: ProgressBar = ProgressBar::new_spinner();
-    e_spinner.set_style(spinner_style.clone());
-    e_spinner.set_message("Calculating the date when Pluto passes Neptune's orbit...");
-
     // Keep incrementing the julian day by one day until pluto is closer than
     // neptune
     while neptune_radius < pluto_radius {
         day += 1_f64;
         neptune_radius = neptune.position_at_time(day).norm();
         pluto_radius = pluto.position_at_time(day).norm();
-        e_spinner.tick();
     }
-    e_spinner.finish_and_clear();
 
     let first_date = day + julian;
 
@@ -94,9 +84,6 @@ fn main() {
      * CALCULATING WHEN PLUTO PASSES NEPTUNE AGAIN
      * ===========================================
      */
-    let g_spinner: ProgressBar = ProgressBar::new_spinner();
-    g_spinner.set_style(spinner_style.clone());
-    g_spinner.set_message("Calculating the date when Neptune passes Plutos's orbit...");
     let mut neptune_radius = neptune.position_at_time(day).norm();
     let mut pluto_radius = pluto.position_at_time(day).norm();
 
@@ -105,8 +92,6 @@ fn main() {
         neptune_radius = neptune.position_at_time(day).norm();
         pluto_radius = pluto.position_at_time(day).norm();
     }
-
-    g_spinner.finish_and_clear();
 
     let second_date = day + julian;
 
@@ -143,7 +128,7 @@ fn main() {
         }
         distance_pb.inc(1);
     }
-    distance_pb.finish_and_clear();
+    distance_pb.finish_with_message("\nDone!\n");
 
     /**
      * ====================================

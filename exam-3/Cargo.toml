@@ -8,3 +8,11 @@ edition = "2018"
 nalgebra = "0.17.2"
 colored = "1.7.0"
 indicatif = "0.11.0"
+
+# Enable some settings to further optimize and reduce
+# Rust binarys, using defaults result in huge binaries
+# even when compiled with --release. 
+[profile.release]
+lto = true
+codegen-units = 1
+panic = 'abort'
