@@ -2,13 +2,13 @@
 #![allow(unused_doc_comments)]
 
 /**
- ** body.rs contains the Body struct and implements methods for it. A body
- ** struct contains only the position and velocity vectors of the body,
- ** other parameters are calculated using methods. A body is instantiated
- ** using using the Body::new() method, which also determines the type of
- ** orbit the body has at the same time. orbit_type does not have to be
- ** given manually.
- **/
+ * body.rs contains the Body struct and implements methods for it. A body
+ * struct contains only the position and velocity vectors of the body,
+ * other parameters are calculated using methods. A body is instantiated
+ * using using the Body::new() method, which also determines the type of
+ * orbit the body has at the same time. orbit_type does not have to be
+ * given manually.
+ */
 use nalgebra::{Matrix3, Vector3};
 use std::f64::consts::PI;
 
@@ -19,10 +19,10 @@ const SOLARGM: f64 = 2.963092749241593e-4;
 const PI2: f64 = 2.0 * PI;
 
 /**
- ** OrbitType is used to abstract away some of the functions that depend on
- ** the type of orbit the body is in, like kepler's equation. That way, you
- ** can call one function and it will return the correct value
- **/
+ * OrbitType is used to abstract away some of the functions that depend on
+ * the type of orbit the body is in, like kepler's equation. That way, you
+ * can call one function and it will return the correct value
+ */
 #[derive(Debug)]
 pub enum OrbitType {
     Circular,
@@ -48,6 +48,7 @@ impl OrbitType {
     }
 }
 
+/// Main structure everything in this file relies on
 #[derive(Debug)]
 pub struct Body {
     pub position: Vector3<f64>,
@@ -179,7 +180,7 @@ impl Body {
     }
 
     pub fn orbital_period(&self) -> f64 {
-        2_f64 * PI * (self.semi_major_axis().powi(3) / SOLARGM).sqrt()
+        PI2 * (self.semi_major_axis().powi(3) / SOLARGM).sqrt()
     }
 
     pub fn orbital_parameter(&self) -> f64 {
@@ -279,7 +280,7 @@ impl Body {
 
     pub fn eccentric_to_true_anomaly(&self, e_anom: f64) -> f64 {
         let e = self.eccentricity();
-        ((e_anom.cos() - e) / (1.0 - e * e_anom.cos())).acos()
+        2.0 * (((1.0 + e) / (1.0 - e)).sqrt() * (e_anom / 2.0).tan()).atan()
     }
 
     /// Return the mean anomaly at a certain time from current position
@@ -299,11 +300,11 @@ impl Body {
 }
 
 /**
- ** Some of the kepler functions below. Body matches on its orbit type
- ** and uses the correct function to return the correct eccentric anomaly
- **/
+ * Some of the kepler functions below. Body matches on its orbit type
+ * and uses the correct function to return the correct eccentric anomaly
+ */
 fn elliptic_kepler(nt: f64, eccen: f64) -> f64 {
-    let tolerance = 1e-10;
+    let tolerance = 1e-12;
     let kep = |e: f64| e - eccen * e.sin() - nt;
     let kep_d = |e: f64| 1.0 - eccen * e.cos();
     let mut e_0 = 0.0;
@@ -316,7 +317,7 @@ fn elliptic_kepler(nt: f64, eccen: f64) -> f64 {
 }
 
 fn hyper_kepler(nt: f64, eccen: f64) -> f64 {
-    let tolerance = 1e-15;
+    let tolerance = 1e-12;
     let kep = |e: f64| eccen * e.sinh() - nt - e;
     let kep_d = |e: f64| eccen * e.cosh() - 1.0;
     let mut e_0 = nt;

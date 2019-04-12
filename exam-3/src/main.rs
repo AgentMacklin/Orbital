@@ -2,14 +2,17 @@
 #![allow(unused_doc_comments)]
 
 /**
- ** Austen LeBeau
- ** ENGR 3310-002
- **/
+ * Austen LeBeau
+ * ENGR 3310-002
+ * Exam 3
+ */
 use nalgebra::Vector3;
 const SOLARGM: f64 = 2.963092749241593e-4;
 
 // extern crate colored;
 use colored::*;
+
+// fancy progress bars
 use indicatif::{ProgressBar, ProgressStyle};
 
 #[macro_use]
@@ -23,8 +26,12 @@ const DAYTOSEC: f64 = 24.0 * 3600.0;
 fn main() {
     // Style for progress bars, it's really stupid but I like it
     let style = ProgressStyle::default_bar()
-        .template("[{elapsed_precise}] [{bar:40.cyan/blue}] [{eta_precise}]")
+        .template("  [{elapsed_precise}] [{bar:40.cyan/blue}] [{eta_precise}]")
         .progress_chars("#>-");
+
+    let spinner_style = ProgressStyle::default_spinner()
+        .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈")
+        .template("  {spinner:blue} {wide_msg}");
 
     let pluto = Body::new(
         Vector3::new(
@@ -53,52 +60,70 @@ fn main() {
     );
 
     let julian = 2458584.50000;
-    let greg_date = date!(julian);
-
     let time = 10_000.352;
 
     /**
+     * =====================================================
      * CALCULATING THE DAY WHEN PLUTO IS CLOSER THAN NEPTUNE
+     * =====================================================
      */
-    let mut day = 50000.0 + time;
+    // Day is 70000 and not 0 because I know that pluto passes
+    // neptune at least after 70000 days from working this problem before
+    let mut day = 70000.0;
     let mut neptune_radius = neptune.position_at_time(day).norm();
     let mut pluto_radius = pluto.position_at_time(day).norm();
 
+    let e_spinner: ProgressBar = ProgressBar::new_spinner();
+    e_spinner.set_style(spinner_style.clone());
+    e_spinner.set_message("Calculating the date when Pluto passes Neptune's orbit...");
+
     // Keep incrementing the julian day by one day until pluto is closer than
     // neptune
-    println!("\nCalculating the date when Pluto passes Neptune's orbit, this will take a bit...");
     while neptune_radius < pluto_radius {
         day += 1_f64;
         neptune_radius = neptune.position_at_time(day).norm();
         pluto_radius = pluto.position_at_time(day).norm();
+        e_spinner.tick();
     }
-    println!("Done!");
+    e_spinner.finish_and_clear();
 
     let first_date = day + julian;
 
     /**
+     * ===========================================
      * CALCULATING WHEN PLUTO PASSES NEPTUNE AGAIN
+     * ===========================================
      */
+    let g_spinner: ProgressBar = ProgressBar::new_spinner();
+    g_spinner.set_style(spinner_style.clone());
+    g_spinner.set_message("Calculating the date when Neptune passes Plutos's orbit...");
     let mut neptune_radius = neptune.position_at_time(day).norm();
     let mut pluto_radius = pluto.position_at_time(day).norm();
 
-    println!("Calculating the date when Neptune passes Plutos's orbit...");
     while neptune_radius > pluto_radius {
         day += 1_f64;
         neptune_radius = neptune.position_at_time(day).norm();
         pluto_radius = pluto.position_at_time(day).norm();
     }
-    println!("Done!");
+
+    g_spinner.finish_and_clear();
 
     let second_date = day + julian;
 
     /**
+     * ===================================================================
      * CALCULATING THE DATE WHEN THE DISTANCE BETWEEN PLUTO AND NEPTUNE IS
      * THE SHORTEST
+     * ===================================================================
      */
-    println!("Calculating closest approach of Neptune and Pluto...");
+    println!("\nCalculating closest approach of Neptune and Pluto...");
+
+    // Creating a fancy progress bar so I know how long I have left
+    // for this calculation to be done
     let distance_pb = ProgressBar::new(500 * 365);
     distance_pb.set_style(style.clone());
+
+    // Setting up the problem
     let mut distance = neptune.distance_to(&pluto);
     let mut min_distance = distance;
     let mut min_day = 0;
@@ -118,10 +143,15 @@ fn main() {
         }
         distance_pb.inc(1);
     }
-    distance_pb.finish_with_message("\nDone!\n");
+    distance_pb.finish_and_clear();
 
+    /**
+     * ====================================
+     * PRINTING OUT RESULTS TO THE TERMINAL
+     * ====================================
+     */
     println!(
-        "{}\n{}\n",
+        "\n{}\n{}\n",
         macros::underline("A-B-C-D-E-F").cyan(),
         date!(julian)
     );
@@ -138,7 +168,7 @@ fn main() {
     printer!("Q", s => pluto.argument_of_ascending_node().to_degrees());
     printer!("R", s => pluto.true_anomaly().to_degrees());
     printer!("S-T-U", v => neptune.position_at_time(time));
-    printer!("V-W-Z", v => neptune.velocity_at_time(time));
+    printer!("V-W-X", v => neptune.velocity_at_time(time));
     printer!("Y-Z-AA", v => pluto.position_at_time(time));
     printer!("AB-AC-AD", v => pluto.velocity_at_time(time));
     println!(
@@ -154,7 +184,7 @@ fn main() {
         date!(second_date)
     );
     printer!("AQ-AR-AS", v => neptune.position_at_time(second_date - julian));
-    printer!("AK-AL-AM", v => pluto.position_at_time(second_date - julian));
+    printer!("AT-AU-AV", v => pluto.position_at_time(second_date - julian));
     println!(
         "{}\n{}\n",
         macros::underline("Date of Closest Approach").cyan(),
