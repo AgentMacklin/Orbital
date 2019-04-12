@@ -20,7 +20,7 @@ use body::Body;
 const DAYTOSEC: f64 = 24.0 * 3600.0;
 
 fn main() {
-    let pluto = Body::new(
+    let mut pluto = Body::new(
         Vector3::new(
             1.218193989126378e1,
             -3.149522235231989e1,
@@ -33,7 +33,7 @@ fn main() {
         ),
     );
 
-    let neptune = Body::new(
+    let mut neptune = Body::new(
         Vector3::new(
             2.905640909261118e1,
             -7.174984730218214e0,
@@ -51,20 +51,33 @@ fn main() {
 
     let time = 10_000.352;
 
-    let mut day = 0.0;
+    let mut day = 50000.0;
     let mut neptune_radius = neptune.position_at_time(day).norm();
     let mut pluto_radius = pluto.position_at_time(day).norm();
 
     // Keep incrementing the julian day by one day until pluto is closer than neptune
-    println!("\nCalculating the date when Pluto pass Neptune's orbit, this will take a bit...");
+    println!("\nCalculating the date when Pluto passes Neptune's orbit, this will take a bit...");
     while neptune_radius < pluto_radius {
         day += 1_f64;
         neptune_radius = neptune.position_at_time(day).norm();
         pluto_radius = pluto.position_at_time(day).norm();
     }
-    println!("Done!");
+    println!("\nDone!");
 
-    let future_greg = date!(day + julian);
+    let first_date = day + julian;
+
+    let mut neptune_radius = neptune.position_at_time(day).norm();
+    let mut pluto_radius = pluto.position_at_time(day).norm();
+
+    println!("\nCalculating the date when Neptune passes Plutos's orbit...");
+    while neptune_radius > pluto_radius {
+        day += 1_f64;
+        neptune_radius = neptune.position_at_time(day).norm();
+        pluto_radius = pluto.position_at_time(day).norm();
+    }
+    println!("\nDone!");
+
+    let second_date = day + julian;
 
     printer!("G", s => neptune.semi_major_axis());
     printer!("H", s => neptune.eccentricity());
@@ -82,5 +95,16 @@ fn main() {
     printer!("V-W-Z", v => neptune.velocity_at_time(time));
     printer!("Y-Z-AA", v => pluto.position_at_time(time));
     printer!("AB-AC-AD", v => pluto.velocity_at_time(time));
-    println!("Date when Pluto is closer than Neptune:\n{}", future_greg);
+    println!(
+        "{}\n{}\n",
+        macros::underline("AE-AF-AG").cyan(),
+        date!(first_date)
+    );
+    printer!("AH-AI-AJ", v => neptune.position_at_time(first_date - julian));
+    printer!("AK-AL-AM", v => neptune.position_at_time(first_date - julian));
+    println!(
+        "{}\n{}\n",
+        macros::underline("AN-AO-AP").cyan(),
+        date!(second_date)
+    );
 }

@@ -111,6 +111,25 @@ impl Body {
         return trans_mat * v;
     }
 
+    pub fn position_at_angle(&self, angle: f64) -> Vector3<f64> {
+        let e = self.eccentricity();
+        let p = self.orbital_parameter();
+        let radius = p / (1.0 + e * angle.cos());
+        Vector3::new(radius, 0.0, 0.0)
+    }
+
+    pub fn velocity_at_angle(&self, angle: f64) -> Vector3<f64> {
+        let t_frame = self.make_frame();
+        let h = t_frame * self.angular_momentum();
+        let coeff = h.norm() / self.orbital_parameter();
+        let e = self.eccentricity();
+        Vector3::new(
+            coeff * -e * angle.sin(),
+            coeff * (1.0 + e * angle.cos()),
+            0.0,
+        )
+    }
+
     /* points from focus to perigee if I'm not mistaken */
     pub fn eccentricity_vector(&self) -> Vector3<f64> {
         let veloc = self.velocity;
@@ -137,19 +156,6 @@ impl Body {
         self.omega().norm()
     }
 
-    pub fn position_at_angle(&self, angle: f64) -> Vector3<f64> {
-        let e = self.eccentricity();
-        let p = self.orbital_parameter();
-        let radius = p / (1.0 + e * angle.cos());
-        Vector3::new(radius, 0.0, 0.0)
-    }
-
-    pub fn velocity_at_angle(&self, angle: f64) -> Vector3<f64> {
-        let coeff = SOLARGM / self.angular_momentum().norm();
-        let e = self.eccentricity();
-        Vector3::new(coeff * -angle.sin(), coeff * (e + angle.cos()), 0.0)
-    }
-
     // Angle to other body, keep getting the wrong thing anyway, tried everything
     pub fn angle_to(&self, other: &Body) -> f64 {
         (self.position.dot(&other.position) / (self.position.norm() * other.position.norm())).acos()
@@ -157,10 +163,10 @@ impl Body {
 
     /* Return a transformation matrix constructed from body's orbit in inertial frame */
     pub fn make_frame(&self) -> Matrix3<f64> {
-        let e_r = self.position.normalize();
-        let e_h = self.angular_momentum().normalize();
-        let e_tht = e_h.cross(&e_r);
-        Matrix3::from_rows(&[e_r.transpose(), e_tht.transpose(), e_h.transpose()])
+        let e_zi = self.position.normalize();
+        let e_zeta = self.angular_momentum().normalize();
+        let e_eta = e_zeta.cross(&e_zi);
+        Matrix3::from_rows(&[e_zi.transpose(), e_eta.transpose(), e_zeta.transpose()])
     }
 
     pub fn semi_major_axis(&self) -> f64 {
