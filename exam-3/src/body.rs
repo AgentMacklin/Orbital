@@ -2,11 +2,13 @@
 #![allow(unused_doc_comments)]
 
 /**
- * body.rs contains the Body struct and implements methods for it. A body struct contains only the
- * position and velocity vectors of the body, other parameters are calculated using methods. A body
- * is instantiated using using the Body::new() method, which also determines the type of orbit the
- * body has at the same time. orbit_type does not have to be given manually.
- */
+ ** body.rs contains the Body struct and implements methods for it. A body
+ ** struct contains only the position and velocity vectors of the body,
+ ** other parameters are calculated using methods. A body is instantiated
+ ** using using the Body::new() method, which also determines the type of
+ ** orbit the body has at the same time. orbit_type does not have to be
+ ** given manually.
+ **/
 use nalgebra::{Matrix3, Vector3};
 use std::f64::consts::PI;
 
@@ -17,10 +19,10 @@ const SOLARGM: f64 = 2.963092749241593e-4;
 const PI2: f64 = 2.0 * PI;
 
 /**
- * OrbitType is used to abstract away some of the functions that depend on
- * the type of orbit the body is in, like kepler's equation. That way, you
- * can call one function and it will return the correct value
- */
+ ** OrbitType is used to abstract away some of the functions that depend on
+ ** the type of orbit the body is in, like kepler's equation. That way, you
+ ** can call one function and it will return the correct value
+ **/
 #[derive(Debug)]
 pub enum OrbitType {
     Circular,
@@ -161,7 +163,8 @@ impl Body {
         (self.position.dot(&other.position) / (self.position.norm() * other.position.norm())).acos()
     }
 
-    /* Return a transformation matrix constructed from body's orbit in inertial frame */
+    /* Return a transformation matrix constructed from body's orbit in inertial
+     * frame */
     pub fn make_frame(&self) -> Matrix3<f64> {
         let e_zi = self.position.normalize();
         let e_zeta = self.angular_momentum().normalize();
@@ -276,8 +279,6 @@ impl Body {
 
     pub fn eccentric_to_true_anomaly(&self, e_anom: f64) -> f64 {
         let e = self.eccentricity();
-        // let sqrt_val = ((1.0 + e) / (1.0 - e)).sqrt();
-        // 2.0 * (sqrt_val * (e_anom / 2.0).tan()).atan() + PI2
         ((e_anom.cos() - e) / (1.0 - e * e_anom.cos())).acos()
     }
 
@@ -286,14 +287,23 @@ impl Body {
         let n = (SOLARGM / self.semi_major_axis().powi(3)).sqrt();
         n * t
     }
+
+    pub fn distance_to(&self, other: &Body) -> f64 {
+        let arg_of_peri = self.argument_of_periapsis();
+        let inc = self.inclination();
+        let arg_of_an = self.argument_of_ascending_node();
+        let t_matrix = three_one_three_transform(arg_of_peri, inc, arg_of_an);
+        let d_vec = t_matrix * other.position - t_matrix * self.position;
+        return d_vec.norm().abs();
+    }
 }
 
 /**
- * Some of the kepler functions below. Body matches on its orbit type
- * and uses the correct function to return the correct eccentric anomaly
- */
+ ** Some of the kepler functions below. Body matches on its orbit type
+ ** and uses the correct function to return the correct eccentric anomaly
+ **/
 fn elliptic_kepler(nt: f64, eccen: f64) -> f64 {
-    let tolerance = 1e-15;
+    let tolerance = 1e-10;
     let kep = |e: f64| e - eccen * e.sin() - nt;
     let kep_d = |e: f64| 1.0 - eccen * e.cos();
     let mut e_0 = 0.0;

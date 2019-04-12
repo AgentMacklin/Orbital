@@ -1,6 +1,6 @@
 /**
- * Macros that make some operations more convenient.
- */
+ ** Macros that make some operations more convenient.
+ **/
 // use super::date::*;
 
 pub fn underline(string: &str) -> String {
