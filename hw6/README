@@ -1,0 +1,14 @@
+Austen LeBeau
+ENGR 3310-002
+Exam 3 Instructions
+
+I have three executables compiled in this directory for Linux, Mac and Windows.
+Hopefully if all is well you should be able to run them directly in the terminal,
+but if you are compliling it make sure to use the release flag, because that will
+cut down the time it takes to run from 2 minutes to a few seconds.
+
+Side note: I like to use colors when printing results out to the terminal since it
+makes it a little easier to differentiate between stuff, but Windows doesn't like
+that, so there might be weird characters littered everywhere instead of colors.
+When I tested it in cmd it printed everything out okay, but if weird stuff happens
+running it in Powershell should fix the problem.
