@@ -1,6 +1,6 @@
 /**
- ** Handles julian and gregorian date stuff
- **/
+ * Handles julian and gregorian date stuff
+ */
 
 pub struct Gregorian {
     year: u32,
@@ -28,8 +28,8 @@ impl std::fmt::Display for Gregorian {
     }
 }
 /**
- ** Convert julian date to gregorian, returns a Gregorian struct
- **/
+ * Convert julian date to gregorian, returns a Gregorian struct
+ */
 pub fn julian_to_greg(julian: f64) -> Gregorian {
     let mut l_months = vec![
         31.0, 28.0, 31.0, 30.0, 31.0, 30.0, 31.0, 31.0, 30.0, 31.0, 30.0, 31.0,

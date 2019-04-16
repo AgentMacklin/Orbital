@@ -175,5 +175,4 @@ fn main() {
         macros::underline("Date of Closest Approach").cyan(),
         date!((min_day as f64) + julian)
     );
-    printer!
 }

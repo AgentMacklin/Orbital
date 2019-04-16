@@ -3,17 +3,15 @@
 
 #include <Eigen/Dense>
 
-
 typedef Eigen::Vector3d vec;
+typedef Eigen::RowVector3d rvec;
 
 class Body {
-private:
+   private:
     vec position;
     vec velocity;
 
-
-public: 
-
+   public:
     Body(vec p, vec v) {
         this->position = p;
         this->velocity = v;
@@ -50,13 +48,10 @@ public:
     double eccentric_to_true_anomaly(double e_anom);
     double mean_anomaly(double time);
     double distance_to(Body body);
-
-
-
 };
 
 Eigen::Matrix3d three_one_three_transform(double omega, double inc, double tht);
 
 double elliptic_kepler(double nt, double e);
 
-#endif // BODY_H
+#endif  // BODY_H

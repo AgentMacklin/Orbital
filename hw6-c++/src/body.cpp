@@ -5,16 +5,13 @@
 #define SOLARGM 2.963092749241593e-4
 #define PI2 (M_PI * 2.0)
 
-#define SQR(x) x * x
-
+#define SQR(x) x* x
 
 vec Body::radial_velocity() {
     return (velocity.dot(position) / position.squaredNorm()) * position;
 }
 
-vec Body::tangential_velocity() {
-    return omega().cross(position);
-}
+vec Body::tangential_velocity() { return omega().cross(position); }
 
 double Body::true_anomaly() {
     vec e_vec = eccentricity_vector();
@@ -32,18 +29,19 @@ vec Body::position_at_time(double time) {
     double omega = argument_of_periapsis() - t_anom;
     double inc = inclination();
     double tht = argument_of_ascending_node();
-    Eigen::Matrix3d t_mat = three_one_three_transform(omega, inc, tht).inverse();
+    Eigen::Matrix3d t_mat =
+        three_one_three_transform(omega, inc, tht).inverse();
     vec p = position_at_angle(t_anom);
     return t_mat * p;
 }
-
 
 vec Body::velocity_at_time(double time) {
     double t_anom = true_anomaly_at_time(time);
     double omega = argument_of_periapsis() - t_anom;
     double inc = inclination();
     double tht = argument_of_ascending_node();
-    Eigen::Matrix3d t_mat = three_one_three_transform(omega, inc, tht).inverse();
+    Eigen::Matrix3d t_mat =
+        three_one_three_transform(omega, inc, tht).inverse();
     vec v = velocity_at_angle(t_anom);
     return t_mat * v;
 }
@@ -60,11 +58,7 @@ vec Body::velocity_at_angle(double angle) {
     vec h = t_frame * angular_momentum();
     double coeff = h.norm() / orbital_parameter();
     double e = eccentricity();
-    return vec(
-            coeff * -e * sin(angle),
-            coeff * (1.0 + e * cos(angle)),
-            0.0
-        );
+    return vec(coeff * -e * sin(angle), coeff * (1.0 + e * cos(angle)), 0.0);
 }
 
 vec Body::eccentricity_vector() {
@@ -72,31 +66,26 @@ vec Body::eccentricity_vector() {
     return (velocity.cross(h) / SOLARGM) - position.normalized();
 }
 
-vec Body::angular_momentum() {
-    return position.cross(velocity);
-}
+vec Body::angular_momentum() { return position.cross(velocity); }
 
 double Body::total_energy() {
     return 0.5 * SQR(velocity.norm()) - (SOLARGM / position.norm());
 }
 
-vec Body::omega() {
-    return angular_momentum() / position.squaredNorm();
-}
+vec Body::omega() { return angular_momentum() / position.squaredNorm(); }
 
-double Body::frame_rotation_rate() {
-    return omega().norm();
-}
+double Body::frame_rotation_rate() { return omega().norm(); }
 
 double Body::angle_to(Body other) {
-    return acos(position.dot(other.position) /(position.norm() * other.position.norm()));
+    return acos(position.dot(other.position) /
+                (position.norm() * other.position.norm()));
 }
 
 Eigen::Matrix3d Body::make_frame() {
     vec e_zi = position.normalized().transpose();
     vec e_zeta = angular_momentum().normalized().transpose();
     vec e_eta = e_zeta.cross(e_zi).transpose();
-    Eigen::Matrix3d mat; 
+    Eigen::Matrix3d mat;
     mat << e_zi, e_eta, e_zeta;
     return mat;
 }
@@ -131,9 +120,7 @@ double Body::time_since_periapsis() {
     return sqrt(a / SOLARGM) * (e_anom - e * sin(e_anom));
 }
 
-double Body::eccentricity() {
-    return eccentricity_vector().norm();
-}
+double Body::eccentricity() { return eccentricity_vector().norm(); }
 
 double Body::inclination() {
     vec h = angular_momentum();
@@ -148,7 +135,7 @@ vec Body::ascending_node() {
 double Body::argument_of_periapsis() {
     vec n = ascending_node();
     vec e = eccentricity_vector();
-    double omega = (n.dot(e)) / acos(n.norm() * e.norm());
+    double omega = acos((n.dot(e)) / (n.norm() * e.norm()));
     if (e[2] < 0.0) {
         return PI2 - omega;
     } else {
@@ -185,9 +172,7 @@ double Body::true_anomaly_at_time(double time) {
     return PI2 - eccentric_to_true_anomaly(angle);
 }
 
-double Body::eccentric_from_mean(double m_anom) {
-    return kepler(m_anom);
-}
+double Body::eccentric_from_mean(double m_anom) { return kepler(m_anom); }
 
 double Body::kepler(double m_anom) {
     double e = eccentricity();
@@ -209,25 +194,29 @@ double Body::distance_to(Body other) {
     double arg_of_peri = argument_of_periapsis();
     double inc = inclination();
     double arg_of_an = argument_of_ascending_node();
-    Eigen::Matrix3d t_mat = three_one_three_transform(arg_of_peri, inc, arg_of_an);
+    Eigen::Matrix3d t_mat =
+        three_one_three_transform(arg_of_peri, inc, arg_of_an);
     vec d_vec = t_mat * other.position - t_mat * position;
     return abs(d_vec.norm());
 }
 
-Eigen::Matrix3d three_one_three_transform(double omega, double inc, double tht) {
-    // Eigen::Matrix3d m_c(
-    //     cos(omega), sin(omega), 0.0,
-    //    -sin(omega), cos(omega), 0.0,
-    //     0.0,        0.0,        1.0  
-    // );
-    Eigen::Matrix3d mat(3, 3);
-    return mat;
+Eigen::Matrix3d three_one_three_transform(double omega, double inc,
+                                          double tht) {
+    Eigen::Matrix3d m_c(3, 3);
+    Eigen::Matrix3d m_b(3, 3);
+    Eigen::Matrix3d m_a(3, 3);
+    m_c << cos(omega), sin(omega), 0.0, -sin(omega), cos(omega), 0.0, 0.0, 0.0,
+        1.0;
+    m_b << 1.0, 0.0, 0.0, 0.0, cos(inc), sin(inc), 0.0, -sin(inc), cos(inc);
+    m_a << cos(tht), sin(tht), 0.0, -sin(tht), cos(tht), 0.0, 0.0, 0.0, 1.0;
+
+    return m_c * m_b * m_a;
 }
 
 double elliptic_kepler(double nt, double eccen) {
     double tolerance = 1e-12;
-    auto kep = [&](double E) { return E  - eccen * sin(E) - nt; };
-    auto kep_d = [&](double E) { return 1.0  - eccen * cos(E); };
+    auto kep = [&](double E) { return E - eccen * sin(E) - nt; };
+    auto kep_d = [&](double E) { return 1.0 - eccen * cos(E); };
     double e_0 = 0.0;
     double e = e_0 - (kep(e_0) / kep_d(e_0));
     while (abs(e - e_0) > tolerance) {
