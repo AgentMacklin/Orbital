@@ -1,21 +1,30 @@
+/**
+ * Austen LeBeau
+ * ENGR 3310-002
+ * 
+ * Implementation of the Orbitable class.
+ */
 
-#include "body.h"
+
+#include "orbitable.hpp"
 #include <cmath>
+
 
 #define SOLARGM 2.963092749241593e-4
 #define PI2 (M_PI * 2.0)
 
 #define SQR(x) x* x
 
-vec Body::radial_velocity() {
+
+Vec Orbitable::radial_velocity() {
     return (velocity.dot(position) / position.squaredNorm()) * position;
 }
 
-vec Body::tangential_velocity() { return omega().cross(position); }
+Vec Orbitable::tangential_velocity() { return omega().cross(position); }
 
-double Body::true_anomaly() {
-    vec e_vec = eccentricity_vector();
-    vec p = position.normalized();
+double Orbitable::true_anomaly() {
+    Vec e_vec = eccentricity_vector();
+    Vec p = position.normalized();
     double t_anom = e_vec.dot(p) / (e_vec.norm() * p.norm());
     if (p.dot(velocity.normalized()) < 0.0) {
         return PI2 - acos(t_anom);
@@ -24,95 +33,95 @@ double Body::true_anomaly() {
     }
 }
 
-vec Body::position_at_time(double time) {
+Vec Orbitable::position_at_time(double time) {
     double t_anom = true_anomaly_at_time(time);
     double omega = argument_of_periapsis() - t_anom;
     double inc = inclination();
     double tht = argument_of_ascending_node();
-    Eigen::Matrix3d t_mat =
+    Mat t_mat =
         three_one_three_transform(omega, inc, tht).inverse();
-    vec p = position_at_angle(t_anom);
+    Vec p = position_at_angle(t_anom);
     return t_mat * p;
 }
 
-vec Body::velocity_at_time(double time) {
+Vec Orbitable::velocity_at_time(double time) {
     double t_anom = true_anomaly_at_time(time);
     double omega = argument_of_periapsis() - t_anom;
     double inc = inclination();
     double tht = argument_of_ascending_node();
-    Eigen::Matrix3d t_mat =
+    Mat t_mat =
         three_one_three_transform(omega, inc, tht).inverse();
-    vec v = velocity_at_angle(t_anom);
+    Vec v = velocity_at_angle(t_anom);
     return t_mat * v;
 }
 
-vec Body::position_at_angle(double angle) {
+Vec Orbitable::position_at_angle(double angle) {
     double e = eccentricity();
     double p = orbital_parameter();
     double radius = p / (1.0 + e * cos(angle));
-    return vec(radius, 0.0, 0.0);
+    return Vec(radius, 0.0, 0.0);
 }
 
-vec Body::velocity_at_angle(double angle) {
-    Eigen::Matrix3d t_frame = make_frame();
-    vec h = t_frame * angular_momentum();
+Vec Orbitable::velocity_at_angle(double angle) {
+    Mat t_frame = make_frame();
+    Vec h = t_frame * angular_momentum();
     double coeff = h.norm() / orbital_parameter();
     double e = eccentricity();
-    return vec(coeff * -e * sin(angle), coeff * (1.0 + e * cos(angle)), 0.0);
+    return Vec(coeff * -e * sin(angle), coeff * (1.0 + e * cos(angle)), 0.0);
 }
 
-vec Body::eccentricity_vector() {
-    vec h = angular_momentum();
+Vec Orbitable::eccentricity_vector() {
+    Vec h = angular_momentum();
     return (velocity.cross(h) / SOLARGM) - position.normalized();
 }
 
-vec Body::angular_momentum() { return position.cross(velocity); }
+Vec Orbitable::angular_momentum() { return position.cross(velocity); }
 
-double Body::total_energy() {
+double Orbitable::total_energy() {
     return 0.5 * SQR(velocity.norm()) - (SOLARGM / position.norm());
 }
 
-vec Body::omega() { return angular_momentum() / position.squaredNorm(); }
+Vec Orbitable::omega() { return angular_momentum() / position.squaredNorm(); }
 
-double Body::frame_rotation_rate() { return omega().norm(); }
+double Orbitable::frame_rotation_rate() { return omega().norm(); }
 
-double Body::angle_to(Body other) {
+double Orbitable::angle_to(Orbitable other) {
     return acos(position.dot(other.position) /
                 (position.norm() * other.position.norm()));
 }
 
-Eigen::Matrix3d Body::make_frame() {
-    vec e_zi = position.normalized().transpose();
-    vec e_zeta = angular_momentum().normalized().transpose();
-    vec e_eta = e_zeta.cross(e_zi).transpose();
-    Eigen::Matrix3d mat;
+Mat Orbitable::make_frame() {
+    Vec e_zi = position.normalized().transpose();
+    Vec e_zeta = angular_momentum().normalized().transpose();
+    Vec e_eta = e_zeta.cross(e_zi).transpose();
+    Mat mat;
     mat << e_zi, e_eta, e_zeta;
     return mat;
 }
 
-double Body::semi_major_axis() {
+double Orbitable::semi_major_axis() {
     double h = angular_momentum().norm();
     double e = eccentricity();
     return SQR(h) / (SOLARGM * (1.0 - SQR(e)));
 }
 
-double Body::orbital_period() {
+double Orbitable::orbital_period() {
     double val = pow(semi_major_axis(), 3.0) / SOLARGM;
     return sqrt(val) * PI2;
 }
 
-double Body::orbital_parameter() {
+double Orbitable::orbital_parameter() {
     double e = eccentricity();
     return semi_major_axis() * (1.0 - SQR(e));
 }
 
-double Body::eccentric_anomaly() {
+double Orbitable::eccentric_anomaly() {
     double e = eccentricity();
     double tht = true_anomaly();
     return 2.0 * atan(tan(tht / 2.0) / sqrt((1.0 + e) / (1.0 - e)));
 }
 
-double Body::time_since_periapsis() {
+double Orbitable::time_since_periapsis() {
     double t_anom = true_anomaly();
     double e_anom = true_to_eccentric(t_anom);
     double a = pow(semi_major_axis(), 3.0);
@@ -120,21 +129,21 @@ double Body::time_since_periapsis() {
     return sqrt(a / SOLARGM) * (e_anom - e * sin(e_anom));
 }
 
-double Body::eccentricity() { return eccentricity_vector().norm(); }
+double Orbitable::eccentricity() { return eccentricity_vector().norm(); }
 
-double Body::inclination() {
-    vec h = angular_momentum();
+double Orbitable::inclination() {
+    Vec h = angular_momentum();
     return acos(h[2] / h.norm());
 }
 
-vec Body::ascending_node() {
-    vec k(0.0, 0.0, 1.0);
+Vec Orbitable::ascending_node() {
+    Vec k(0.0, 0.0, 1.0);
     return k.cross(angular_momentum());
 }
 
-double Body::argument_of_periapsis() {
-    vec n = ascending_node();
-    vec e = eccentricity_vector();
+double Orbitable::argument_of_periapsis() {
+    Vec n = ascending_node();
+    Vec e = eccentricity_vector();
     double omega = acos((n.dot(e)) / (n.norm() * e.norm()));
     if (e[2] < 0.0) {
         return PI2 - omega;
@@ -143,8 +152,8 @@ double Body::argument_of_periapsis() {
     }
 }
 
-double Body::argument_of_ascending_node() {
-    vec n = ascending_node();
+double Orbitable::argument_of_ascending_node() {
+    Vec n = ascending_node();
     double n_x = n[0];
     double n_y = n[1];
     if (n_y >= 0.0) {
@@ -154,7 +163,7 @@ double Body::argument_of_ascending_node() {
     }
 }
 
-double Body::true_to_eccentric(double t_anom) {
+double Orbitable::true_to_eccentric(double t_anom) {
     double a = semi_major_axis();
     double e = eccentricity();
     double b = a * (1.0 - sqrt(pow(e, 2.0)));
@@ -165,46 +174,46 @@ double Body::true_to_eccentric(double t_anom) {
     return atan2(s, c);
 }
 
-double Body::true_anomaly_at_time(double time) {
+double Orbitable::true_anomaly_at_time(double time) {
     double t_peri = time_since_periapsis();
     double m_anom = mean_anomaly(time + t_peri);
     double angle = eccentric_from_mean(m_anom);
     return PI2 - eccentric_to_true_anomaly(angle);
 }
 
-double Body::eccentric_from_mean(double m_anom) { return kepler(m_anom); }
+double Orbitable::eccentric_from_mean(double m_anom) { return kepler(m_anom); }
 
-double Body::kepler(double m_anom) {
+double Orbitable::kepler(double m_anom) {
     double e = eccentricity();
     return elliptic_kepler(m_anom, e);
 }
 
-double Body::eccentric_to_true_anomaly(double e_anom) {
+double Orbitable::eccentric_to_true_anomaly(double e_anom) {
     double e = eccentricity();
     double e_sqrt = sqrt((1.0 + e) / (1.0 - e));
     return 2.0 * atan(e_sqrt * tan(e_anom / 2.0));
 }
 
-double Body::mean_anomaly(double time) {
+double Orbitable::mean_anomaly(double time) {
     double n = sqrt(SOLARGM / pow(semi_major_axis(), 3));
     return n * time;
 }
 
-double Body::distance_to(Body other) {
+double Orbitable::distance_to(Orbitable other) {
     double arg_of_peri = argument_of_periapsis();
     double inc = inclination();
     double arg_of_an = argument_of_ascending_node();
-    Eigen::Matrix3d t_mat =
+    Mat t_mat =
         three_one_three_transform(arg_of_peri, inc, arg_of_an);
-    vec d_vec = t_mat * other.position - t_mat * position;
+    Vec d_vec = t_mat * other.position - t_mat * position;
     return abs(d_vec.norm());
 }
 
-Eigen::Matrix3d three_one_three_transform(double omega, double inc,
+Mat three_one_three_transform(double omega, double inc,
                                           double tht) {
-    Eigen::Matrix3d m_c(3, 3);
-    Eigen::Matrix3d m_b(3, 3);
-    Eigen::Matrix3d m_a(3, 3);
+    Mat m_c(3, 3);
+    Mat m_b(3, 3);
+    Mat m_a(3, 3);
     m_c << cos(omega), sin(omega), 0.0, -sin(omega), cos(omega), 0.0, 0.0, 0.0,
         1.0;
     m_b << 1.0, 0.0, 0.0, 0.0, cos(inc), sin(inc), 0.0, -sin(inc), cos(inc);
@@ -214,7 +223,7 @@ Eigen::Matrix3d three_one_three_transform(double omega, double inc,
 }
 
 double elliptic_kepler(double nt, double eccen) {
-    double tolerance = 1e-12;
+    double tolerance = 1.0e-12;
     auto kep = [&](double E) { return E - eccen * sin(E) - nt; };
     auto kep_d = [&](double E) { return 1.0 - eccen * cos(E); };
     double e_0 = 0.0;

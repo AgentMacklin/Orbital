@@ -7,13 +7,15 @@
 #include <iostream>
 #include <vector>
 
+
+// Something I pulled off the internet to slice a C++ vector
 template <typename T>
 std::vector<T> slice(std::vector<T> const& v, int m, int n) {
     auto first = v.cbegin() + m;
     auto last = v.cbegin() + n + 1;
 
-    std::vector<T> vec(first, last);
-    return vec;
+    std::vector<T> Vec(first, last);
+    return Vec;
 }
 
 class Gregorian {
@@ -25,6 +27,7 @@ class Gregorian {
     int minute;
     double second;
 
+    // Define how to print out a Gregorian object
     friend std::ostream& operator<<(std::ostream& out, Gregorian const& date) {
         out << "Year:    " << date.year << std::endl;
         out << "Month:   " << date.month << std::endl;
@@ -36,6 +39,9 @@ class Gregorian {
     }
 };
 
+/**
+ * Convert a Gregorian date to a Julian
+ */
 double gregorian_to_julian(Gregorian& date) {
     return (367.0 * date.year) -
            7.0 * trunc((trunc(date.year + (date.month + 9.0) / 12.0)) / 4.0) +
@@ -43,6 +49,9 @@ double gregorian_to_julian(Gregorian& date) {
            (((((date.second / 60.0) + date.minute) / 60.0) + date.hour) / 24.0);
 }
 
+/**
+ * Convert a Julian date to a Gregorian
+ */
 Gregorian julian_to_greg(double julian) {
     std::vector<double> l_months = {31.0, 28.0, 31.0, 30.0, 31.0, 30.0,
                                     31.0, 31.0, 30.0, 31.0, 30.0, 31.0};
@@ -66,7 +75,7 @@ Gregorian julian_to_greg(double julian) {
         i += 1;
     }
     double month = (double)i;
-    std::vector<double> l_month_sum = slice(l_months, 0, i);
+    std::vector<double> l_month_sum = slice(l_months, 0, i - 2);
     double m_sum = 0.0;
     for (double month : l_month_sum) {
         m_sum += month;
