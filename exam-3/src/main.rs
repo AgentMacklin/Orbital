@@ -69,6 +69,9 @@ fn main() {
     let mut neptune_radius = neptune.position_at_time(day).norm();
     let mut pluto_radius = pluto.position_at_time(day).norm();
 
+    printer!("\nPluto Radius", s => pluto_radius);
+    printer!("Neptune Radius", s => neptune_radius);
+
     // Keep incrementing the julian day by one day until pluto is closer than
     // neptune
     while neptune_radius < pluto_radius {
@@ -135,6 +138,10 @@ fn main() {
      * PRINTING OUT RESULTS TO THE TERMINAL
      * ====================================
      */
+    
+    printer!("First Date", s => first_date);
+    printer!("Second Date", s => second_date);
+    printer!("Date of Closest Approach", s => julian + min_day as f64);
     println!(
         "\n{}\n{}\n",
         macros::underline("A-B-C-D-E-F").cyan(),

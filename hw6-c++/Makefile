@@ -13,12 +13,12 @@ all: $(EXECUTABLE)
 run: clean all
 	./$(EXECUTABLE)
 
-$(EXECUTABLE): $(SRC)/*.cpp
+$(EXECUTABLE): $(SRC)/*.cc
 	$(CXX) $(O_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
 
 clean:
 	-rm $(EXECUTABLE)
 
-debug: $(SRC)/*.cpp
+debug: $(SRC)/*.cc
 	-rm debug
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)

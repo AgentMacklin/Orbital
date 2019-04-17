@@ -14,8 +14,8 @@ std::vector<T> slice(std::vector<T> const& v, int m, int n) {
     auto first = v.cbegin() + m;
     auto last = v.cbegin() + n + 1;
 
-    std::vector<T> Vec(first, last);
-    return Vec;
+    std::vector<T> Vector(first, last);
+    return Vector;
 }
 
 class Gregorian {
