@@ -1,33 +1,32 @@
 /**
  * Austen LeBeau
  * ENGR 3310-002
- * 
+ *
  * Main entry point for the program
  */
 
-
-#include <iostream>
 #include <iomanip>
-#include "orbitable.h"
+#include <iostream>
 #include "date.h"
+#include "orbitable.h"
 #include "progress.h"
 #include "util.h"
 
-#define RAD2DEG(x) x * (180.0 / M_PI)
-
+#define RAD2DEG(x) x*(180.0 / M_PI)
 
 int main() {
-    
     /*****************************
      * INITIAL SETUP FOR PROGRAM *
      *****************************/
 
-    Orbitable pluto(
-        Vector(1.218193989126378e1, -3.149522235231989e1, -1.535562041975234e-1),
-        Vector(3.000627734261702e-3, 4.635059607321797e-4, -9.300258803000724e-4));
-    Orbitable neptune(
-        Vector(2.905640909261118e1, -7.174984730218214e0, -5.218791016710037e-1),
-        Vector(7.317748743401405e-4, 3.065897473349852e-3, -8.039332012516184e-5));
+    Orbitable pluto(Vector(1.218193989126378e1, -3.149522235231989e1,
+                           -1.535562041975234e-1),
+                    Vector(3.000627734261702e-3, 4.635059607321797e-4,
+                           -9.300258803000724e-4));
+    Orbitable neptune(Vector(2.905640909261118e1, -7.174984730218214e0,
+                             -5.218791016710037e-1),
+                      Vector(7.317748743401405e-4, 3.065897473349852e-3,
+                             -8.039332012516184e-5));
 
     double julian = 2458584.5;
     double time = 10000.352;
@@ -47,11 +46,9 @@ int main() {
     }
 
     double first_date = day + julian;
-    
+
     neptune_radius = neptune.position_at_time(day).norm();
     pluto_radius = pluto.position_at_time(day).norm();
-
-
 
     /*****************************************************
      * CALCULATE WHEN PLUTO PASSES NEPTUNE'S ORBIT AGAIN *
@@ -64,7 +61,6 @@ int main() {
     }
 
     double second_date = day + julian;
-
 
     /*******************************************************
      * CALCULATE THE CLOSEST APPROACH OF NEPTUNE AND PLUTO *
@@ -84,12 +80,12 @@ int main() {
         Orbitable new_neptune(neptune.position_at_time((double)i),
                               neptune.velocity_at_time((double)i));
         distance = new_neptune.distance_to(new_pluto);
-        
+
         if (distance < min_distance) {
             min_distance = distance;
             min_day = i;
         }
-        
+
         // Just progress bar stuff
         ++progress;
         progress.display();
@@ -97,7 +93,7 @@ int main() {
 
     Gregorian current_day = julian_to_greg(julian);
     Gregorian first_greg = julian_to_greg(first_date);
-    
+
     /**
      * ============================
      * PRINTING RESULTS TO TERMINAL
@@ -128,5 +124,7 @@ int main() {
     printer("AN-AO-AP", julian_to_greg(second_date));
     printer("AQ-AR-AS", neptune.position_at_time(second_date - julian));
     printer("AT-AU-AV", pluto.position_at_time(second_date - julian));
-    printer("Date of Closest Approach", julian_to_greg(julian + (double)min_day));
+    printer("Date of Closest Approach",
+            julian_to_greg(julian + (double)min_day));
+    std::cout << '\n';
 }

@@ -7,13 +7,11 @@
 #include <iostream>
 #include <vector>
 
-
 // Something I pulled off the internet to slice a C++ vector
 template <typename T>
 std::vector<T> slice(std::vector<T> const& v, int m, int n) {
     auto first = v.cbegin() + m;
     auto last = v.cbegin() + n + 1;
-
     std::vector<T> Vector(first, last);
     return Vector;
 }
@@ -34,7 +32,7 @@ class Gregorian {
         out << "Day:     " << date.day << std::endl;
         out << "Hour:    " << date.hour << std::endl;
         out << "Minute:  " << date.minute << std::endl;
-        out << "Second:  " << date.second << std::endl;
+        out << "Second:  " << date.second;  // << std::endl;
         return out;
     }
 };

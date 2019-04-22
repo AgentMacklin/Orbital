@@ -1,6 +1,6 @@
 CXX		  := g++
 CXX_FLAGS := -std=c++17 -ggdb #-Wall -Wextra  
-O_FLAGS	  := -Ofast -flto
+O_FLAGS	  := -std=c++17 -Ofast -flto
 
 SRC	:= src
 

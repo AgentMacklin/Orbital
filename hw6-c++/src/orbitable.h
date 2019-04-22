@@ -1,16 +1,14 @@
 /**
  * Austen LeBeau
  * ENGR 3310-002
- * 
+ *
  * Defines the Orbitable class, which is the bread and butter of this program.
  * It takes in two vectors (defined by the Eigen library) for m_position and
  * m_velocity, and uses methods to return everything else.
  */
 
-
 #ifndef BODY_H
 #define BODY_H
-
 
 // Linear algebra library
 #include <Eigen/Dense>
@@ -25,19 +23,16 @@ typedef Eigen::RowVector3d RowVector;
  * Class declaration
  */
 class Orbitable {
-
    private:
     Vector m_position;
     Vector m_velocity;
 
    public:
-
     // basic constructor
-    Orbitable(Vector p, Vector v) : m_position(p), m_velocity(v) {};
+    Orbitable(Vector p, Vector v) : m_position(p), m_velocity(v){};
 
     // Make a transformation matrix from a body's orbital parameters
     Matrix make_frame();
-
 
     /**
      * Methods that return a vector
@@ -53,13 +48,9 @@ class Orbitable {
     Vector omega();
     Vector ascending_node();
 
-    Vector current_position() {
-        return m_position;
-    }
+    Vector current_position() { return m_position; }
 
-    Vector current_velocity() {
-        return m_velocity;
-    }
+    Vector current_velocity() { return m_velocity; }
 
     /**
      * Rest of the methods
@@ -84,36 +75,13 @@ class Orbitable {
     double mean_anomaly(double time);
     double distance_to(Orbitable body);
     double angle_to(Orbitable body);
-
-
 };
 
-// Create a three-one-three transformation matrix from a body's orbital parameters
+// Create a three-one-three transformation matrix from a body's orbital
+// parameters
 Matrix three_one_three_transform(double omega, double inc, double tht);
 
 // Newton's method
 double elliptic_kepler(double nt, double e);
-
-// namespace lambert {
-//     void practice_algorithm(Vector r, Vector r_0, double delta_t) {
-//         double r_mag = r.norm();
-//         double r_0_mag = r_0.norm();
-//         double c_tht = r_0.dot(r) / (r_0_mag * r_mag);
-//         double s_tht = sqrt(1.0 - (c_tht * c_tht));
-//         double A = sqrt(r_mag * r_0_mag * (1.0 + c_tht));
-//         if (A == 0) throw "Lambert algorithm cannot give a solution";
-
-//         double phi_upper = 4.0 * (M_PI * M_PI);
-//         double phi_lower = -4.0 * M_PI;
-        
-//         double y_new;
-//         double x_new;
-//         double t_new = 0.0;
-
-//         while (fabs(delta_t - t_new) > 1.0e-6) {
-
-//         }
-//     }
-// }
 
 #endif  // BODY_H

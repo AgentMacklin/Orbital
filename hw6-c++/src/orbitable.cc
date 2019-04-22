@@ -1,21 +1,18 @@
 /**
  * Austen LeBeau
  * ENGR 3310-002
- * 
+ *
  * Implementation of the Orbitable class.
  */
-
 
 #include "orbitable.h"
 #include <cmath>
 #include <iostream>
 
-
 #define SOLARGM 2.963092749241593e-4
 #define PI2 (M_PI * 2.0)
 
 #define SQR(x) x* x
-
 
 Vector Orbitable::radial_velocity() {
     return (m_velocity.dot(m_position) / m_position.squaredNorm()) * m_position;
@@ -39,8 +36,7 @@ Vector Orbitable::position_at_time(double time) {
     double omega = argument_of_periapsis() - t_anom;
     double inc = inclination();
     double tht = argument_of_ascending_node();
-    Matrix t_mat =
-        three_one_three_transform(omega, inc, tht).inverse();
+    Matrix t_mat = three_one_three_transform(omega, inc, tht).inverse();
     Vector p = position_at_angle(t_anom);
     return t_mat * p;
 }
@@ -50,8 +46,7 @@ Vector Orbitable::velocity_at_time(double time) {
     double omega = argument_of_periapsis() - t_anom;
     double inc = inclination();
     double tht = argument_of_ascending_node();
-    Matrix t_mat =
-        three_one_three_transform(omega, inc, tht).inverse();
+    Matrix t_mat = three_one_three_transform(omega, inc, tht).inverse();
     Vector v = velocity_at_angle(t_anom);
     return t_mat * v;
 }
@@ -79,10 +74,13 @@ Vector Orbitable::eccentricity_vector() {
 Vector Orbitable::angular_momentum() { return m_position.cross(m_velocity); }
 
 double Orbitable::total_energy() {
-    return 0.5 * (m_velocity.norm() * m_velocity.norm()) - (SOLARGM / m_position.norm());
+    return 0.5 * (m_velocity.norm() * m_velocity.norm()) -
+           (SOLARGM / m_position.norm());
 }
 
-Vector Orbitable::omega() { return angular_momentum() / m_position.squaredNorm(); }
+Vector Orbitable::omega() {
+    return angular_momentum() / m_position.squaredNorm();
+}
 
 double Orbitable::frame_rotation_rate() { return omega().norm(); }
 
@@ -204,8 +202,7 @@ double Orbitable::distance_to(Orbitable other) {
     double arg_of_peri = argument_of_periapsis();
     double inc = inclination();
     double arg_of_an = argument_of_ascending_node();
-    Matrix t_mat =
-        three_one_three_transform(arg_of_peri, inc, arg_of_an);
+    Matrix t_mat = three_one_three_transform(arg_of_peri, inc, arg_of_an);
     Vector d_vec = t_mat * other.m_position - t_mat * m_position;
     return abs(d_vec.norm());
 }
@@ -215,17 +212,12 @@ Matrix three_one_three_transform(double omega, double inc, double tht) {
     Matrix m_b(3, 3);
     Matrix m_a(3, 3);
 
-    m_c << cos(omega), sin(omega), 0.0, 
-          -sin(omega), cos(omega), 0.0, 
-           0.0,        0.0,        1.0;
+    m_c << cos(omega), sin(omega), 0.0, -sin(omega), cos(omega), 0.0, 0.0, 0.0,
+        1.0;
 
-    m_b << 1.0,  0.0,      0.0, 
-           0.0,  cos(inc), sin(inc), 
-           0.0, -sin(inc), cos(inc);
+    m_b << 1.0, 0.0, 0.0, 0.0, cos(inc), sin(inc), 0.0, -sin(inc), cos(inc);
 
-    m_a << cos(tht), sin(tht), 0.0, 
-          -sin(tht), cos(tht), 0.0, 
-           0.0,      0.0,      1.0;
+    m_a << cos(tht), sin(tht), 0.0, -sin(tht), cos(tht), 0.0, 0.0, 0.0, 1.0;
 
     return m_c * m_b * m_a;
 }
