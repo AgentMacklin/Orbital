@@ -25,7 +25,7 @@ LambertResults practice_lambert(Vector r_0, Vector r, double delta_t) {
     double cos_delta_tht = r_0.dot(r) / (r_mag * r_0_mag);
     double sin_delta_tht = sqrt(1 - sqr(cos_delta_tht));
     double A = sqrt(r_mag * r_0_mag * (1 + cos_delta_tht));
-    if (A == 0) throw "Lambert algorithm cannot provide a solution.";
+    if (A == 0) throw std::runtime_error("Lambert Algorithm error: PANIC, YOU'RE DOOMED");
 
     double phi_n = 0;
 

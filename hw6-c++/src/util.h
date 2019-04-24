@@ -2,6 +2,8 @@
 #define UTIL_H
 
 #include <iostream>
+#include <Eigen/Dense>
+#include "date.h"
 #include "rang.h"
 
 #define CYAN rang::fg::cyan
@@ -9,13 +11,15 @@
 #define BLUE rang::fg::blue
 #define RESET rang::fg::reset
 
+using Vector = Eigen::Vector3d;
+
 std::string underline(std::string str) {
     return std::string(str + "\n") + std::string(str.length(), '-');
 }
 
 template <typename T>
 T sqr(T value) {
-    return T * T;
+    return value * value;
 }
 
 template <typename T>
