@@ -4,7 +4,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include "date.h"
-#include "rang.h"
+#include <rang.h>
 
 #define CYAN rang::fg::cyan
 #define GREEN rang::fg::green
