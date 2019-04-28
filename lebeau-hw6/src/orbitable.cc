@@ -38,7 +38,8 @@ Vector Orbitable::position_at_time(double time) {
     double tht = argument_of_ascending_node();
     Matrix t_mat = three_one_three_transform(omega, inc, tht).inverse();
     Vector p = position_at_angle(t_anom);
-    return t_mat * p;
+    Vector out_vector = t_mat * p;
+    return out_vector;
 }
 
 Vector Orbitable::velocity_at_time(double time) {

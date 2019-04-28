@@ -14,7 +14,7 @@ run: clean all
 	./$(EXECUTABLE)
 
 $(EXECUTABLE): $(SRC)/*.cc
-	$(CXX) $(O_FLAGS) -I$(INCLUDE) $^ -o $@ $(LIBRARIES)
+	$(CXX) $(O_FLAGS) $^ -o $@ $(LIBRARIES)
 
 clean:
 	-rm $(EXECUTABLE)

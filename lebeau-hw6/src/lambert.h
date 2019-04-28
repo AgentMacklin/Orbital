@@ -1,3 +1,10 @@
+
+/**
+ * Defines lambert algorithm for problems 1 and 2. LambertPractice and LambertResults
+ * are for returning v and v_0 in one object from functions, for problems 1 and 2 
+ * respectively.
+ */
+
 #ifndef LAMBERT_H
 #define LAMBERT_H
 
@@ -61,7 +68,7 @@ LambertResults lambert(Vector r_0, Vector r, double tm, double delta_t) {
             }
         }
         double x_n = sqrt(y_new / c2);
-        delta_t_n = ((pow(x_n, 3) * c3) + (A * sqrt(y_new))) / sqrt(PRACTICEGM);
+        delta_t_n = ((pow(x_n, 3) * c3) + (A * sqrt(y_new))) / sqrt(SOLARGM);
         delta_t_n <= delta_t ? phi_lower = phi_n : phi_upper = phi_n;
         phi_n = (phi_upper + phi_lower) / 2.0;
         if (phi_n >= 0.0) {
@@ -74,7 +81,7 @@ LambertResults lambert(Vector r_0, Vector r, double tm, double delta_t) {
 
     double f = 1.0 - (y_new / r_0_mag);
     double g_dot = 1.0 - (y_new / r_mag);
-    double g = A * sqrt(y_new / PRACTICEGM);
+    double g = A * sqrt(y_new / SOLARGM);
     double f_dot = ((f * g_dot) - 1.0) / g;
     Vector v_0 = (r - (f * r_0)) / g;
     Vector v = ((g_dot * r) - r_0) / g;

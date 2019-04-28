@@ -1,4 +1,8 @@
-
+/**
+ * date.h defines a Gregorian struct which represents a Gregorian date and defines
+ * its << operator from streams. Functions for converting dates are also defined
+ * here, as well as a function to slice C++ vectors for the Julian to Gregorian function
+ */
 
 #ifndef DATE_H
 #define DATE_H
@@ -24,6 +28,14 @@ class Gregorian {
     int hour;
     int minute;
     double second;
+    
+    Gregorian(int y, int m, int d, int h, int mon, double s) :
+        year(y), 
+        month(m), 
+        day(d), 
+        hour(h), 
+        minute(mon), 
+        second(s) {}; 
 
     // Define how to print out a Gregorian object
     friend std::ostream& operator<<(std::ostream& out, Gregorian const& date) {

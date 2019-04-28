@@ -1,10 +1,16 @@
+
+/**
+ * This header file is just for miscellaneous stuff not for orbital, but for 
+ * things like printing results, squaring numbers, etc
+ */
+
 #ifndef UTIL_H
 #define UTIL_H
 
 #include <iostream>
 #include <Eigen/Dense>
 #include "date.h"
-#include <rang.h>
+#include <rang.h> // colered output
 
 #define CYAN rang::fg::cyan
 #define GREEN rang::fg::green
