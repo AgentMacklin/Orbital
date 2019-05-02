@@ -11,7 +11,7 @@
 #define BODY_H
 
 // Linear algebra library
-#include "Eigen/Dense"
+#include <Eigen/Dense>
 #include <cmath>
 
 // changing type names to something more convenient

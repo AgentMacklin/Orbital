@@ -8,7 +8,7 @@
 #ifndef LAMBERT_H
 #define LAMBERT_H
 
-#include "Eigen/Dense"
+#include <Eigen/Dense>
 #include <cmath>
 #include "util.h"
 

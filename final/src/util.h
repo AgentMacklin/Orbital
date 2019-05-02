@@ -8,7 +8,7 @@
 #define UTIL_H
 
 #include <iostream>
-#include "Eigen/Dense"
+#include <Eigen/Dense>
 #include "date.h"
 #include "rang.h" // colered output
 

@@ -12,8 +12,6 @@
 #define SOLARGM 2.963092749241593e-4
 #define PI2 (M_PI * 2.0)
 
-#define SQR(x) x* x
-
 Vector Orbitable::radial_velocity() {
     return (m_velocity.dot(m_position) / m_position.squaredNorm()) * m_position;
 }

@@ -14,6 +14,9 @@
 #define RAD2DEG(x) x*(180.0 / M_PI)
 
 int main() {
+
+    std::cout << std::scientific;
+
     Orbitable Earth (
             Vector (
                 -8.601208063143356e-1,
@@ -40,6 +43,7 @@ int main() {
                 )
             );
 
+    // Asteroid
     Orbitable ToshiH (
             Vector (
                 -7.436280142422779e-1,
@@ -53,12 +57,24 @@ int main() {
                 )
             );
 
-    Gregorian current_greg (2019, 4, 22, 0, 0, 0);
-    Gregorian future_greg (2033, 13, 8, 0 ,0, 0);
-    double current_julian = gregorian_to_julian(current_greg);
+    double current_date = gregorian_to_julian(Gregorian (2019, 4, 22, 0, 0 ,0));
+    double earth_departure_date = gregorian_to_julian(Gregorian (2033, 13, 8, 0, 0, 0));
+    double mars_flyby_date = gregorian_to_julian(Gregorian (2037, 9, 21, 0, 0, 0));
+    double asteroid_arrival_date = gregorian_to_julian(Gregorian (2039, 7, 13, 0, 0, 0));
     
-     
+    Vector r_0 = Earth.position_at_time(earth_departure_date - current_date);
+    Vector r = Mars.position_at_time(mars_flyby_date - current_date);
 
+    LambertResults earth_to_mars = lambert(r_0, r, 1, mars_flyby_date - earth_departure_date);
+
+    printer("A-B-C", r_0);
+    printer("D-E-F", r);
+    printer("G-H-I", earth_to_mars.v_0);
+    printer("J-K-L", earth_to_mars.v);
+
+
+
+    std::cout << std::endl;
 
     return 0;
 }

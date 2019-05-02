@@ -52,7 +52,7 @@ class Gregorian {
 /**
  * Convert a Gregorian date to a Julian
  */
-double gregorian_to_julian(Gregorian& date) {
+double gregorian_to_julian(const Gregorian& date) {
     return (367.0 * date.year) -
            7.0 * trunc((trunc(date.year + (date.month + 9.0) / 12.0)) / 4.0) +
            trunc((275.0 * date.month) / 9.0) + 1721013.5 + date.day +
