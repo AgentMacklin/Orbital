@@ -9,7 +9,7 @@
 #include <cmath>
 #include <iostream>
 
-#define SOLARGM 2.963092749241593e-4
+#define SOLARGM 2.9630927492415926e-4
 #define PI2 (M_PI * 2.0)
 
 Vector Orbitable::radial_velocity() {

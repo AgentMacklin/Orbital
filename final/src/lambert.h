@@ -13,7 +13,7 @@
 #include "util.h"
 
 #define PRACTICEGM 398600.4418
-#define SOLARGM 2.963092749241593e-4
+#define SOLARGM 2.9630927492415926e-4
 
 using Vector = Eigen::Vector3d;
 
