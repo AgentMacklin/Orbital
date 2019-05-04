@@ -1,4 +1,4 @@
-CXX		  := g++
+CXX		  := clang++
 CXX_FLAGS := -std=c++11 -ggdb #-Wall -Wextra  
 O_FLAGS	  := -std=c++11 -Ofast -flto# -Wall -Wextra
 

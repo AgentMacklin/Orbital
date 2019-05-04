@@ -1,5 +1,7 @@
 
 /**
+ * Austen LeBeau
+ * 
  * Defines lambert algorithm for problems 1 and 2. LambertPractice and LambertResults
  * are for returning v and v_0 in one object from functions, for problems 1 and 2 
  * respectively.
@@ -37,7 +39,7 @@ double c3_coeff(double phi) {
 LambertResults lambert(Vector r_0, Vector r, double tm, double delta_t) {
     double r_mag = r.norm();
     double r_0_mag = r_0.norm();
-    double cos_delta_tht = r.dot(r_0) / (r_mag * r_0_mag);
+    double cos_delta_tht = r_0.dot(r) / (r_mag * r_0_mag);
     if (tm == 0) {
         double delta_tht = acos(cos_delta_tht);
         tm = -sin(delta_tht) / sqrt(1.0 - sqr(cos_delta_tht));
